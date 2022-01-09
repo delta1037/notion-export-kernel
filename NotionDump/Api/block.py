@@ -7,6 +7,8 @@ from notion_client import AsyncClient
 from notion_client import APIErrorCode, APIResponseError
 import json
 from json import JSONDecodeError
+import NotionDump
+import os
 
 
 # Block内容解析
@@ -23,8 +25,13 @@ class Block:
         else:
             self.client = client_handle
 
+        # 创建临时文件夹
+        self.tmp_dir = NotionDump.TMP_DIR
+        if not os.path.exists(self.tmp_dir):
+            os.mkdir(self.tmp_dir)
+
     # 获取该块下所有的子块，对于
-    def retrieve_block_children(self, page_size=50):
+    def retrieve_block_children(self, page_size=50, export_json=False):
         query_post = {
             "block_id": self.block_id,
             "page_size": page_size
@@ -42,6 +49,9 @@ class Block:
                     **query_post
                 )
                 next_cur = db_query_ret["next_cursor"]
+
+            if export_json:
+                self.block_to_json(query_ret)
             return query_ret
         except APIResponseError as error:
             if error.code == APIErrorCode.ObjectNotFound:
@@ -51,5 +61,20 @@ class Block:
                 logging.exception(error)
         return None
 
+    # 导出内容到json文件中
+    def block_to_json(self, block_json, json_name=None):
+        if block_json is None:
+            return None
+        json_handle = None
+        try:
+            json_handle = json.dumps(block_json, ensure_ascii=False, indent=4)
+        except JSONDecodeError:
+            print("json decode error")
+            return
 
+        if json_name is None:
+            json_name = self.tmp_dir + self.block_id + ".json"
+        file = open(json_name, "w+", encoding="utf-8")
+        file.write(json_handle)
+        return
 

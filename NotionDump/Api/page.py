@@ -28,7 +28,8 @@ class Page:
                 self.client = AsyncClient(auth=self.token)
         else:
             self.client = client_handle
-        self.page_parser = PageParser(self.page_id, parser_type=NotionDump.PARSER_TYPE_MD)
+        # 这里传入handle是为了子块的解析
+        self.page_parser = PageParser(self.page_id, client_handle=self.client, parser_type=NotionDump.PARSER_TYPE_MD)
         # 页面的操作就是块的操作
         self.block_handle = Block(
             block_id=self.page_id,

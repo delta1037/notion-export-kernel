@@ -152,7 +152,7 @@ class BlockParser:
                 page_name = block_handle["plain_text"]
                 if page_name is None:
                     page_name = page_id
-                mention_plain = content_format.get_mention_page_format(page_name, page_local_url)
+                mention_plain = content_format.get_page_format_md(page_name, page_local_url)
             else:
                 mention_plain = page_id
         else:
@@ -483,4 +483,18 @@ class BlockParser:
         if block_handle["type"] != "table":
             logging.exception("table type error! parent_id= " + self.block_id + " id= " + block_handle["id"])
             return table_ret
+        return ""
+
+    def child_page_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
+        child_page_ret = ""
+        if block_handle["type"] != "child_page":
+            logging.exception("child_page type error! parent_id= " + self.block_id + " id= " + block_handle["id"])
+            return child_page_ret
+
+        page_body = block_handle["child_page"]
+        if page_body["title"] == "":
+            if parser_type == NotionDump.PARSER_TYPE_MD:
+                return content_format.get_page_format_md("NULL Page", "NULL")
+            else:
+                return content_format.get_page_format_plain("NULL Page", "NULL")
         return ""

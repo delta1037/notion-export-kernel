@@ -12,9 +12,14 @@ def get_mention_format(mention_content):
     return "@(" + mention_content + ")"
 
 
-# 获取mention page的格式
-def get_mention_page_format(page_name, page_url):
+# 获取page的格式
+def get_page_format_md(page_name, page_url):
     return "[" + page_name + "](" + page_url + ")"
+
+
+# 获取page的格式
+def get_page_format_plain(page_name, page_url):
+    return page_name + "(" + page_url + ")"
 
 
 # 封装URL的格式
@@ -40,4 +45,3 @@ def get_file_format_md(filename, file_url):
 # 封装文件链接格式
 def get_file_format_plain(filename, file_url):
     return filename + "(" + file_url + ")"
-

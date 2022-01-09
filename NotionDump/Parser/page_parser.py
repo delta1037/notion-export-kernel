@@ -5,14 +5,32 @@ import os
 import logging
 import NotionDump
 from NotionDump.Parser.block_parser import BlockParser
+from NotionDump.Api.block import Block
+from notion_client import Client, AsyncClient
 
 
 class PageParser:
-    def __init__(self, page_id, token=None, client_handle=None, async_api=False, parser_type=NotionDump.PARSER_TYPE_PLAIN):
+    def __init__(self, page_id, token=None, client_handle=None, async_api=False,
+                 parser_type=NotionDump.PARSER_TYPE_PLAIN):
+        self.token = token
         self.page_id = page_id
+
+        # 创建临时文件夹
         self.tmp_dir = NotionDump.TMP_DIR
         if not os.path.exists(self.tmp_dir):
             os.mkdir(self.tmp_dir)
+
+        if client_handle is None and token is not None:
+            # 有的token话就初始化一下
+            if not async_api:
+                self.client = Client(auth=self.token)
+            else:
+                self.client = AsyncClient(auth=self.token)
+        else:
+            # 没有token，传进来handle就用，没传就不用
+            self.client = client_handle
+        if self.client is None:
+            logging.exception("page parser init fail, client = NULL, page_id=" + self.page_id)
         self.block_parser = BlockParser(block_id=self.page_id)
         self.parser_type = parser_type
 
@@ -24,19 +42,39 @@ class PageParser:
             return False
         if last_type == "bulleted_list_item" and now_type == "bulleted_list_item":
             return False
+        if last_type == "toggle" and now_type == "toggle":
+            return False
         return True
 
-    def page_to_md(self, page_handle):
-        block_list = page_handle["results"]
-        # 数据库是空的，直接返回完事
+    def __get_children_block_list(self, block):
+        # 如果没有子页面，直接返回空
+        if not block["has_children"]:
+            return None
+
+        # 获取块id下面的内容并继续解析
+        block_handle = Block(block["id"], token=self.token, client_handle=self.client)
+        # export_json=True 测试时导出json文件
+        block_list = block_handle.retrieve_block_children()["results"]
+        # 如果没有获取到块，也返回空
         if len(block_list) == 0:
-            return
+            return None
+        # 返回获取到的块列表
+        return block_list
 
-        # 创建Markdown文件
-        tmp_md_filename = self.tmp_dir + self.page_id + ".md"
-        file = open(tmp_md_filename, "w", encoding="utf-8", newline='')
+    def __parser_block_list(self, block_list, indent=0):
+        prefix = ""
+        p_index = 0
+        while p_index < indent:
+            prefix += "\t"  # 前缀是一个TAB
+            p_index += 1
+        # 测试一下有多宽
+        # print("|" + prefix + "|")
 
+        # 如果有内容先加个换行再说
         block_text = ""
+        if indent != 0:
+            block_text = "\n"
+
         last_type = "to_do"  # 初始化不换行
         list_index = 1
         for block in block_list:
@@ -49,6 +87,7 @@ class PageParser:
             else:
                 list_index = 1
             last_type = block_type
+            block_text += prefix
             if block_type == "paragraph":
                 # Page paragraph
                 block_text += self.block_parser.paragraph_parser(block, self.parser_type)
@@ -91,13 +130,36 @@ class PageParser:
             elif block_type == "table":
                 # Page table
                 block_text += self.block_parser.table_parser(block, self.parser_type)
+            elif block_type == "child_page":
+                # Page child_page
+                block_text += self.block_parser.child_page_parser(block, self.parser_type)
             else:
                 logging.exception("unknown properties type:" + block_type)
 
+            # 看改块下面有没有子块，如果有就继续解析
+            children_block_list = self.__get_children_block_list(block)
+            if children_block_list is not None:
+                block_text += self.__parser_block_list(children_block_list, indent+1)
             block_text += "\n"
+        return block_text
 
+    def page_to_md(self, page_handle):
+        block_list = page_handle["results"]
+        # 数据库是空的，直接返回完事
+        if len(block_list) == 0:
+            return
+
+        # 创建Markdown文件
+        tmp_md_filename = self.tmp_dir + self.page_id + ".md"
+        file = open(tmp_md_filename, "w", encoding="utf-8", newline='')
+
+        # 解析block_list
+        block_text = self.__parser_block_list(block_list)
+
+        # 将解析内容写入文件
         file.write(block_text)
         file.flush()
         file.close()
+
         # 将临时文件地址转出去，由外面进行进一步的操作
         return tmp_md_filename
