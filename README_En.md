@@ -2,16 +2,16 @@
 
 [English_Version]()
 
-------
-
 ## 说明
 
 本仓库是基于notion-client的二次开发，主要实现目标有
 
-- [x] 将Notion数据库导出为CSV文件
-- [ ] 将Notion Page页面导出为md文件
-- [ ] 将Notion Page页面导出到数据库（SQL）
-- [ ] 将数据库（SQL）导出成md&CSV文件
+-   [ ] 将Notion数据库导出为CSV文件
+-   [ ] 将Notion Page页面导出为md文件
+-   [ ] 将Notion Page页面导出到数据库（SQL）
+-   [ ] 将数据库（SQL）导出成md&CSV文件
+
+
 
 ## 项目结构
 
@@ -22,6 +22,8 @@ notoin-dump
 │  └─Parser # 解析Json数据
 └─Tests 	# 测试代码
 ```
+
+
 
 ## 输出文件结构
 
@@ -40,7 +42,3 @@ Page导出需要Page id和一些必要的认证信息
 
 
 我数据库不太行，只能想到这样的存储方法
-
-
-
-
