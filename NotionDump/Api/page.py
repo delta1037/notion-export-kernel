@@ -102,7 +102,9 @@ class Page:
                 # print("begin")
                 # self.__test_show_child_page()
                 block_handle = Block(page_id, self.token, self.client)
-                page_json = block_handle.retrieve_block_children(export_json=True)
+
+                # 测试 export_json=True
+                page_json = block_handle.retrieve_block_children()
                 # 更新已经获取到的页面的状态，无论获取成功或者失败都过去了，只获取一次
                 common_op.update_child_page_stats(self.child_pages, page_id, dumped=True)
                 if page_json is None:
