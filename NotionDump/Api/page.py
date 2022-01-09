@@ -14,13 +14,14 @@ import os
 import NotionDump
 from NotionDump.Parser.page_parser import PageParser
 from NotionDump.Api.block import Block
+from NotionDump.utils import common_op
 
 
 class Page:
     # 初始化
-    def __init__(self, page_id, token, client_handle=None, async_api=False):
+    def __init__(self, page_id, token, client_handle=None, async_api=False, export_child_pages=False):
         self.token = token
-        self.page_id = page_id
+        self.page_id = page_id.replace('-', '')
         if client_handle is None:
             if not async_api:
                 self.client = Client(auth=self.token)
@@ -41,6 +42,20 @@ class Page:
         self.tmp_dir = NotionDump.TMP_DIR
         if not os.path.exists(self.tmp_dir):
             os.mkdir(self.tmp_dir)
+
+        # 设置变量存放子page 字典
+        self.child_pages = {}
+        self.export_child_page = export_child_pages
+
+    def __update_child_pages(self, child_pages):
+        for item in child_pages:
+            if item not in self.child_pages:
+                # 如果现有的列表里没有这一条,则新加一条
+                self.child_pages[item] = child_pages[item]
+
+    # show_child_page
+    def __test_show_child_page(self):
+        print(self.child_pages)
 
     # 获取Page的信息
     def retrieve_page(self):
@@ -63,11 +78,46 @@ class Page:
         page_json = self.query_page()
         if page_json is None:
             return False
-
+        # 解析到临时文件中
         tmp_csv_filename = self.page_parser.page_to_md(page_json)
+
+        # 更新已经获取到的页面的状态
+        common_op.update_child_page_stats(self.child_pages, self.page_id, dumped=True)
+        # 从页面里获取到所有的子页面
+        self.__update_child_pages(self.page_parser.get_child_pages_dic())
         if md_name is not None:
             shutil.copyfile(tmp_csv_filename, md_name)
+
+        if self.export_child_page:
+            self.__recursion_child_page()
         return True
+
+    def __recursion_child_page(self):
+        update_flag = False
+        for page_id in self.child_pages:
+            # print("page id " + page_id)
+            # self.__test_show_child_page()
+            if not self.child_pages[page_id]["dumped"]:
+                update_flag = True
+                # print("begin")
+                # self.__test_show_child_page()
+                block_handle = Block(page_id, self.token, self.client)
+                page_json = block_handle.retrieve_block_children(export_json=True)
+                # 更新已经获取到的页面的状态，无论获取成功或者失败都过去了，只获取一次
+                common_op.update_child_page_stats(self.child_pages, page_id, dumped=True)
+                if page_json is None:
+                    logging.log(logging.ERROR, "get page error, id=" + page_id)
+                    continue
+
+                # 解析到临时文件中
+                # print("parser page id " + page_id)
+                self.page_parser.page_to_md(page_json, new_id=page_id)
+                # 从页面里获取到所有的子页面
+                self.__update_child_pages(self.page_parser.get_child_pages_dic())
+                # print("end")
+                # self.__test_show_child_page()
+        if update_flag:
+            self.__recursion_child_page()
 
     def page_to_db(self):
         # 从配置文件中获取数据库配置，打开数据库，并将csv文件写入到数据库中
@@ -76,12 +126,10 @@ class Page:
             return None
 
         # tmp_csv_filename = self.database_parser.database_to_csv(db_json, col_name_list)
-        # TODO
-        # 将CSV文件写入到数据库
-        # 调用SQL中的notion2sql提供的接口
+        # TODO 将Md文件写入到数据库;调用SQL中的notion2sql提供的接口
         return
 
-    # 源文件，直接输出成json
+    # 源文件，直接输出成json; 辅助测试使用
     def page_to_json(self, json_name=None):
         page_json = self.query_page()
         if page_json is None:

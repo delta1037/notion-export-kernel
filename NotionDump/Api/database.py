@@ -17,7 +17,7 @@ class Database:
     # 初始化
     def __init__(self, database_id, token, client_handle=None, async_api=False):
         self.token = token
-        self.database_id = database_id
+        self.database_id = database_id.replace('-', '')
         if client_handle is None:
             if not async_api:
                 self.client = Client(auth=self.token)
@@ -96,12 +96,10 @@ class Database:
             return None
 
         tmp_csv_filename = self.database_parser.database_to_csv(db_json, col_name_list)
-        # TODO
-        # 将CSV文件写入到数据库
-        # 调用SQL中的notion2sql提供的接口
+        # TODO 将CSV文件写入到数据库；调用SQL中的notion2sql提供的接口
         return
 
-    # 源文件，直接输出成json
+    # 源文件，直接输出成json; 辅助测试使用
     def database_to_json(self, json_name=None, db_q_filter="{}", db_q_sorts="[]"):
         db_json = self.query_database(db_q_filter=db_q_filter, db_q_sorts=db_q_sorts)
         if db_json is None:

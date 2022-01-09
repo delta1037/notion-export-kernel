@@ -16,7 +16,7 @@ class Block:
     # 初始化
     def __init__(self, block_id, token, client_handle=None, async_api=False):
         self.token = token
-        self.block_id = block_id
+        self.block_id = block_id.replace('-', '')
         if client_handle is None:
             if not async_api:
                 self.client = Client(auth=self.token)
@@ -30,7 +30,7 @@ class Block:
         if not os.path.exists(self.tmp_dir):
             os.mkdir(self.tmp_dir)
 
-    # 获取该块下所有的子块，对于
+    # 获取该块下所有的子块
     def retrieve_block_children(self, page_size=50, export_json=False):
         query_post = {
             "block_id": self.block_id,
@@ -61,7 +61,7 @@ class Block:
                 logging.exception(error)
         return None
 
-    # 导出内容到json文件中
+    # 源文件，直接输出成json; 辅助测试使用
     def block_to_json(self, block_json, json_name=None):
         if block_json is None:
             return None

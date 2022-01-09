@@ -12,7 +12,7 @@ def test_get_page_json_data():
 
 # 解析数据库内容测试：根据token和id解析数据库内容，得到临时CSV文件
 def test_page_parser():
-    page_handle = Page(token=TOKEN_TEST, page_id=PAGE_MIX_ID)
+    page_handle = Page(token=TOKEN_TEST, page_id=PAGE_MIX_ID, export_child_pages=True)
     page_handle.page_to_md()
 
 

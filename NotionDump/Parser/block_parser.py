@@ -1,6 +1,7 @@
 # author: delta1037
 # Date: 2022/01/08
 # mail:geniusrabbit@qq.com
+import copy
 import logging
 from notion_client import Client, AsyncClient
 import NotionDump
@@ -10,7 +11,7 @@ from NotionDump.utils import content_format
 class BlockParser:
     def __init__(self, block_id, token=None, client_handle=None, async_api=False):
         self.token = token
-        self.block_id = block_id
+        self.block_id = block_id.replace('-', '')
         if client_handle is None and token is not None:
             # 有的token话就初始化一下
             if not async_api:
@@ -20,6 +21,13 @@ class BlockParser:
         else:
             # 没有token，传进来handle就用，没传就不用
             self.client = client_handle
+
+        # 设置变量存放子page 字典
+        self.child_pages = {}
+
+    # 获取子页面字典
+    def get_child_pages_dic(self):
+        return self.child_pages
 
     # 文本的格式生成
     @staticmethod
@@ -84,7 +92,7 @@ class BlockParser:
         if block_handle["name"] is not None:
             return block_handle["name"]
         # 如果无法获取名字则返回id
-        return block_handle["id"]
+        return block_handle["id"].replace('-', '')
 
     def __user_parser(self, block_handle):
         if block_handle["type"] != "user":
@@ -122,14 +130,14 @@ class BlockParser:
         eq_str = "$$ " + block_handle["expression"] + " $$"
         return eq_str
 
-    # 关于链接到其它的Page可能需要递归处理
+    # TODO 关于链接到其它的Page可能需要递归处理
     def __page_parser(self, block_handle):
         if block_handle["type"] != "page":
             logging.exception("page type error! parent_id= " + self.block_id)
             return ""
 
         page_body = block_handle["page"]
-        return page_body["id"]
+        return page_body["id"].replace('-', '')
 
     # 提及到其它页面，日期，用户
     def __mention_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
@@ -146,12 +154,14 @@ class BlockParser:
         elif mention_body["type"] == "page":
             page_id = self.__page_parser(mention_body)
             # TODO 这里先生成一个本地的page链接，后续再把相关的页面生成
+            self.child_pages[page_id] = copy.deepcopy(NotionDump.CHILD_PAGE_TEMP)
             if parser_type == NotionDump.PARSER_TYPE_MD:
                 # 统一获取page本地地址
                 page_local_url = content_format.get_page_local_path(page_id)
                 page_name = block_handle["plain_text"]
                 if page_name is None:
                     page_name = page_id
+                    self.child_pages[page_id]["page_name"] = page_name
                 mention_plain = content_format.get_page_format_md(page_name, page_local_url)
             else:
                 mention_plain = page_id
@@ -497,4 +507,16 @@ class BlockParser:
                 return content_format.get_page_format_md("NULL Page", "NULL")
             else:
                 return content_format.get_page_format_plain("NULL Page", "NULL")
-        return ""
+        else:
+            page_id = (block_handle["id"]).replace('-', '')
+            url_local = content_format.get_page_local_path(page_id)
+
+            # 保存子页面信息
+            # print("child page id", page_id)
+            self.child_pages[page_id] = copy.deepcopy(NotionDump.CHILD_PAGE_TEMP)
+            self.child_pages[page_id]["page_name"] = page_body["title"]
+
+            if parser_type == NotionDump.PARSER_TYPE_MD:
+                return content_format.get_page_format_md(page_body["title"], url_local)
+            else:
+                return content_format.get_page_format_plain(page_body["title"], url_local)

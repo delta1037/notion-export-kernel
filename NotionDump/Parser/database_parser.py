@@ -11,7 +11,7 @@ from NotionDump.Parser.block_parser import BlockParser
 
 class DatabaseParser:
     def __init__(self, database_id, token=None, client_handle=None, async_api=False):
-        self.database_id = database_id
+        self.database_id = database_id.replace('-', '')
         self.token = token
         self.client = client_handle
         self.tmp_dir = NotionDump.TMP_DIR

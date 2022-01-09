@@ -7,13 +7,14 @@ import NotionDump
 from NotionDump.Parser.block_parser import BlockParser
 from NotionDump.Api.block import Block
 from notion_client import Client, AsyncClient
+from NotionDump.Api.database import Database
 
 
 class PageParser:
     def __init__(self, page_id, token=None, client_handle=None, async_api=False,
                  parser_type=NotionDump.PARSER_TYPE_PLAIN):
         self.token = token
-        self.page_id = page_id
+        self.page_id = page_id.replace('-', '')
 
         # 创建临时文件夹
         self.tmp_dir = NotionDump.TMP_DIR
@@ -34,6 +35,10 @@ class PageParser:
         self.block_parser = BlockParser(block_id=self.page_id)
         self.parser_type = parser_type
 
+    # 获取子页面字典
+    def get_child_pages_dic(self):
+        return self.block_parser.get_child_pages_dic()
+
     @staticmethod
     def __newline(last_type, now_type):
         if last_type == "to_do" and now_type == "to_do":
@@ -52,9 +57,9 @@ class PageParser:
             return None
 
         # 获取块id下面的内容并继续解析
-        block_handle = Block(block["id"], token=self.token, client_handle=self.client)
+        block_handle = Block(block["id"].replace('-', ''), token=self.token, client_handle=self.client)
         # export_json=True 测试时导出json文件
-        block_list = block_handle.retrieve_block_children()["results"]
+        block_list = block_handle.retrieve_block_children(export_json=True)["results"]
         # 如果没有获取到块，也返回空
         if len(block_list) == 0:
             return None
@@ -133,6 +138,10 @@ class PageParser:
             elif block_type == "child_page":
                 # Page child_page
                 block_text += self.block_parser.child_page_parser(block, self.parser_type)
+            elif block_type == "child_database":
+                # Page child_database
+                db_handle = Database(database_id=block["id"], token=self.token, client_handle=self.client)
+                db_handle.database_to_csv()
             else:
                 logging.exception("unknown properties type:" + block_type)
 
@@ -143,16 +152,20 @@ class PageParser:
             block_text += "\n"
         return block_text
 
-    def page_to_md(self, page_handle):
+    def page_to_md(self, page_handle, new_id=None):
         block_list = page_handle["results"]
         # 数据库是空的，直接返回完事
         if len(block_list) == 0:
             return
 
         # 创建Markdown文件
-        tmp_md_filename = self.tmp_dir + self.page_id + ".md"
-        file = open(tmp_md_filename, "w", encoding="utf-8", newline='')
+        tmp_md_filename = ""
+        if new_id is not None:
+            tmp_md_filename = self.tmp_dir + new_id.replace('-', '') + ".md"
+        else:
+            tmp_md_filename = self.tmp_dir + self.page_id + ".md"
 
+        file = open(tmp_md_filename, "w", encoding="utf-8", newline='')
         # 解析block_list
         block_text = self.__parser_block_list(block_list)
 
@@ -160,6 +173,8 @@ class PageParser:
         file.write(block_text)
         file.flush()
         file.close()
+
+        print("write file " + tmp_md_filename)
 
         # 将临时文件地址转出去，由外面进行进一步的操作
         return tmp_md_filename

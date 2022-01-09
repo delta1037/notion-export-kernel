@@ -4,7 +4,7 @@
 
 # 获取本地链接的格式
 def get_page_local_path(page_id):
-    return "./page_" + page_id + ".md"
+    return "./page_" + page_id.replace('-', '') + ".md"
 
 
 # 获取mention的格式

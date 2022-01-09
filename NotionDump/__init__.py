@@ -15,3 +15,5 @@ MAIN_PAGE_DIR = "./"
 SUB_PAGE_DIR = "./sub_page/"
 # 所有的数据库文件存放目录
 DATA_BASE_DIR = "./database/"
+
+CHILD_PAGE_TEMP = {"dumped": False, "link": "", "page_name": ""}
