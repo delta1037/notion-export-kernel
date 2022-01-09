@@ -1,12 +1,12 @@
 # notion-dump
 
-[English_Version]()
+[English_Version](https://github.com/delta1037/notion-dump/blob/main/README_En.md)
 
 ------
 
 ## 说明
 
-本仓库是基于notion-client的二次开发，主要实现目标有
+本仓库是基于notion-client的开发，主要实现目标有
 
 - [x] 将Notion数据库导出为CSV文件
 - [ ] 将Notion Page页面导出为md文件
@@ -37,10 +37,22 @@ Page导出需要Page id和一些必要的认证信息
 
 数据库导出是将所有的page存储到一张表里，将导出的每一个CSV文件作为一张表存储
 
-
-
 我数据库不太行，只能想到这样的存储方法
 
+## Attention
 
+需要完善的内容
+- [x] 段落中的链接
+- [x] 文件链接 
+- [ ] Table文件内的表格
+- [ ] 数据库CSV只是存了下来，但是本地查看因为没有格式及其不方便
+- [ ] page和CSV存储到SQL数据库
 
+需要深层解析的内容
+- [ ] 各种列表
+- [ ] page页面
+- [ ] page中的数据库文件，作为一个文件链接存在即可
 
+已知的问题
+- [ ] 评论内容无法获取到
+- [ ]

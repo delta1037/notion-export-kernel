@@ -1,34 +1,71 @@
 # author: delta1037
 # Date: 2022/01/08
 # mail:geniusrabbit@qq.com
-import string
 import logging
+from notion_client import Client, AsyncClient
 import NotionDump
+from NotionDump.utils import content_format
 
 
 class BlockParser:
-    def __init__(self, block_id):
+    def __init__(self, block_id, token=None, client_handle=None, async_api=False):
+        self.token = token
         self.block_id = block_id
+        if client_handle is None and token is not None:
+            # 有的token话就初始化一下
+            if not async_api:
+                self.client = Client(auth=self.token)
+            else:
+                self.client = AsyncClient(auth=self.token)
+        else:
+            # 没有token，传进来handle就用，没传就不用
+            self.client = client_handle
 
-    # 讲Text块，Json格式获取到纯文本(去除格式)
+    # 文本的格式生成
+    @staticmethod
+    def __annotations_parser(block_handle, str_plain):
+        str_ret = str_plain
+        if block_handle["code"]:
+            str_ret = "`" + str_ret + "`"
+        if block_handle["underline"]:
+            str_ret = "<u>" + str_ret + "</u>"
+        if block_handle["bold"]:
+            str_ret = "**" + str_ret + "**"
+        if block_handle["italic"]:
+            str_ret = "*" + str_ret + "*"
+        if block_handle["color"] != "default":
+            # 添加颜色
+            str_ret = "<font color=" + block_handle["color"] + ">" + str_ret + "</font>"
+        if block_handle["strikethrough"]:
+            str_ret = "~~" + str_ret + "~~"
+        return str_ret
+
     def __text_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         if block_handle["type"] != "text":
             logging.exception("text type error! id=" + self.block_id)
             print(block_handle)
             return ""
         text_str = block_handle["plain_text"]
-        return text_str
+        if text_str is None:
+            text_str = ""
+
+        if parser_type == NotionDump.PARSER_TYPE_MD:
+            # 解析annotations部分，为text_str添加格式
+            return self.__annotations_parser(block_handle["annotations"], text_str)
+        else:
+            return text_str
 
     def __text_block_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         paragraph_ret = ""
         if block_handle["type"] == "text":
-            paragraph_ret = self.__text_parser(block_handle)
+            paragraph_ret = self.__text_parser(block_handle, parser_type)
         elif block_handle["type"] == "equation":
             paragraph_ret = self.__equation_inline_parser(block_handle)
         elif block_handle["type"] == "mention":
-            paragraph_ret = self.__mention_parser(block_handle)
+            paragraph_ret = self.__mention_parser(block_handle, parser_type)
         else:
             logging.exception("text type error! parent_id= " + self.block_id)
+        # print(block_handle, paragraph_ret)
         return paragraph_ret
 
     def __text_list_parser(self, text_list, parser_type=NotionDump.PARSER_TYPE_PLAIN):
@@ -38,6 +75,7 @@ class BlockParser:
                 plain_text += self.__text_block_parser(text_block, parser_type)
         return plain_text
 
+    # TODO : people只获取了名字和ID，后续可以做深度解析用户相关内容
     def __people_parser(self, block_handle):
         if block_handle["object"] != "user":
             logging.exception("people type error! id=" + self.block_id)
@@ -62,7 +100,11 @@ class BlockParser:
         filename = block_handle["name"]
         file_url = block_handle["file"]["url"]
         # 格式处理简单格式（也可以转换成markdown格式[]()）
-        return filename + "|" + file_url
+        if parser_type == NotionDump.PARSER_TYPE_MD:
+            # file转换成文件链接的形式
+            return content_format.get_file_format_md(filename, file_url)
+        else:
+            return content_format.get_file_format_plain(filename, file_url)
 
     # "$ equation_inline $"
     def __equation_inline_parser(self, block_handle):
@@ -96,12 +138,31 @@ class BlockParser:
             return ""
 
         mention_body = block_handle["mention"]
+        mention_plain = ""
         if mention_body["type"] == "date":
-            return self.date_parser(mention_body)
+            mention_plain = self.date_parser(mention_body)
         elif mention_body["type"] == "user":
-            return self.__user_parser(mention_body)
+            mention_plain = self.__user_parser(mention_body)
         elif mention_body["type"] == "page":
-            return self.__page_parser(mention_body)
+            page_id = self.__page_parser(mention_body)
+            # TODO 这里先生成一个本地的page链接，后续再把相关的页面生成
+            if parser_type == NotionDump.PARSER_TYPE_MD:
+                # 统一获取page本地地址
+                page_local_url = content_format.get_page_local_path(page_id)
+                page_name = block_handle["plain_text"]
+                if page_name is None:
+                    page_name = page_id
+                mention_plain = content_format.get_mention_page_format(page_name, page_local_url)
+            else:
+                mention_plain = page_id
+        else:
+            logging.exception("unknown mention type " + mention_body["type"])
+        if parser_type == NotionDump.PARSER_TYPE_MD:
+            # 解析annotations部分，为mention_plain添加格式
+            return self.__annotations_parser(block_handle["annotations"],
+                                             content_format.get_mention_format(mention_plain))
+        else:
+            return content_format.get_mention_format(mention_plain)
 
     # 数据库 title
     def title_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
@@ -150,11 +211,9 @@ class BlockParser:
             logging.exception("url type error! parent_id= " + self.block_id + " id= " + block_handle["id"])
             return ""
         url = block_handle["url"]
-        # print(url)
-        ret_str = ""
-        if url is not None:
-            ret_str = url
-        return ret_str
+        if url is None:
+            url = ""
+        return content_format.get_url_format(url)
 
     # 数据库 email
     def email_parser(self, block_handle):
@@ -200,16 +259,9 @@ class BlockParser:
             logging.exception("date type error! parent_id= " + self.block_id + " id= " + block_handle["id"])
             return ""
         date = block_handle["date"]
-        # print(date)
-        ret_str = ""
         if date is None:
-            return ret_str
-
-        if date["start"] is not None:
-            ret_str = date["start"]
-        if date["end"] is not None:
-            ret_str += " ~ " + date["end"]  # 日期之间用“~”分割
-        return ret_str
+            return ""
+        return content_format.get_date_format(date["start"], date["end"])
 
     # 数据库 people
     def people_parser(self, block_handle):

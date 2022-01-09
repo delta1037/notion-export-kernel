@@ -15,7 +15,7 @@ from NotionDump.Parser.database_parser import DatabaseParser
 
 class Database:
     # 初始化
-    def __init__(self, token, database_id, client_handle=None, async_api=False):
+    def __init__(self, database_id, token, client_handle=None, async_api=False):
         self.token = token
         self.database_id = database_id
         if client_handle is None:
@@ -25,6 +25,8 @@ class Database:
                 self.client = AsyncClient(auth=self.token)
         else:
             self.client = client_handle
+
+        # 数据库解析并不需要传额外的信息
         self.database_parser = DatabaseParser(self.database_id)
 
         # 创建临时文件夹

@@ -1,10 +1,10 @@
 # notion-dump
 
-[English_Version]()
+English version is updating...
 
 ## 说明
 
-本仓库是基于notion-client的二次开发，主要实现目标有
+本仓库是基于notion-client的开发，主要实现目标有
 
 -   [ ] 将Notion数据库导出为CSV文件
 -   [ ] 将Notion Page页面导出为md文件

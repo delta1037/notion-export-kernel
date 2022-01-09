@@ -8,7 +8,7 @@ from NotionDump.Parser.block_parser import BlockParser
 
 
 class PageParser:
-    def __init__(self, page_id, parser_type=NotionDump.PARSER_TYPE_PLAIN):
+    def __init__(self, page_id, token=None, client_handle=None, async_api=False, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         self.page_id = page_id
         self.tmp_dir = NotionDump.TMP_DIR
         if not os.path.exists(self.tmp_dir):

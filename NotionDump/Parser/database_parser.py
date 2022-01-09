@@ -10,12 +10,20 @@ from NotionDump.Parser.block_parser import BlockParser
 
 
 class DatabaseParser:
-    def __init__(self, block_id):
-        self.block_id = block_id
+    def __init__(self, database_id, token=None, client_handle=None, async_api=False):
+        self.database_id = database_id
+        self.token = token
+        self.client = client_handle
         self.tmp_dir = NotionDump.TMP_DIR
         if not os.path.exists(self.tmp_dir):
             os.mkdir(self.tmp_dir)
-        self.block_parser = BlockParser(block_id=self.block_id)
+
+        # 这里虽然传入了但是也不会用到
+        self.block_parser = BlockParser(
+            block_id=self.database_id,
+            token=self.token,
+            client_handle=self.client
+        )
 
     # 从一个页面里把列名给解析出来
     def __get_col_name_list(self, one_page):
@@ -27,7 +35,7 @@ class DatabaseParser:
             else:
                 col_name_list.append(item)
         if title_name == "":
-            logging.exception("col name no title error! id=" + self.block_id)
+            logging.exception("col name no title error! id=" + self.database_id)
             return ""
         col_name_list.append(title_name)  # 把title_name放在最后一个，逆序之后就是第一个
         # 根据现有的数据库看来这里需要逆序一下才和实际的数据库一致
@@ -47,7 +55,7 @@ class DatabaseParser:
             col_name_list = self.__get_col_name_list(page_list[0])
 
         # 创建CSV文件
-        tmp_csv_filename = self.tmp_dir + self.block_id + ".csv"
+        tmp_csv_filename = self.tmp_dir + self.database_id + ".csv"
         file = open(tmp_csv_filename, "w", encoding="utf-8", newline='')
         csv_writer = csv.writer(file)
         # 首先将列的名称写入到CSV文件中
