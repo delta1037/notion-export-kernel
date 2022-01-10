@@ -7,7 +7,7 @@ import os
 import logging
 
 import NotionDump
-from NotionDump.Parser.block_parser import BlockParser
+from NotionDump.Parser.base_parser import BaseParser
 from NotionDump.utils import internal_var
 
 
@@ -21,7 +21,7 @@ class DatabaseParser:
             os.mkdir(self.tmp_dir)
 
         # 块解析器
-        self.block_parser = BlockParser(block_id=self.database_id)
+        self.base_parser = BaseParser(base_id=self.database_id)
 
     # 从一个页面里把列名给解析出来
     def __get_col_name_list(self, one_page):
@@ -40,8 +40,8 @@ class DatabaseParser:
         col_name_list.reverse()
         return col_name_list
 
-    def get_child_page_dic(self):
-        return self.block_parser.get_child_pages_dic()
+    def get_child_pages_dic(self):
+        return self.base_parser.get_child_pages_dic()
 
     # 格式化存储，这里是临时文件存在方式（在外面转成数据库，或者最终输出CSV的格式）
     def database_to_csv(self, database_handle, col_name_list=None, new_id=None):
@@ -78,29 +78,29 @@ class DatabaseParser:
             for item in col_name_list:
                 # 解析每一个方格的内容
                 if page["properties"][item]["type"] == "title":  # title
-                    page_iter.append(self.block_parser.title_parser(page["properties"][item], page_id, parser_type=self.parser_type))
+                    page_iter.append(self.base_parser.title_parser(page["properties"][item], page_id, parser_type=self.parser_type))
                 elif page["properties"][item]["type"] == "multi_select":  # multi_select
-                    page_iter.append(self.block_parser.multi_select_parser(page["properties"][item]))
+                    page_iter.append(self.base_parser.multi_select_parser(page["properties"][item]))
                 elif page["properties"][item]["type"] == "select":
-                    page_iter.append(self.block_parser.select_parser(page["properties"][item]))
+                    page_iter.append(self.base_parser.select_parser(page["properties"][item]))
                 elif page["properties"][item]["type"] == "rich_text":
-                    page_iter.append(self.block_parser.rich_text_parser(page["properties"][item], parser_type=self.parser_type))
+                    page_iter.append(self.base_parser.rich_text_parser(page["properties"][item], parser_type=self.parser_type))
                 elif page["properties"][item]["type"] == "url":
-                    page_iter.append(self.block_parser.url_parser(page["properties"][item]))
+                    page_iter.append(self.base_parser.url_parser(page["properties"][item]))
                 elif page["properties"][item]["type"] == "email":
-                    page_iter.append(self.block_parser.email_parser(page["properties"][item]))
+                    page_iter.append(self.base_parser.email_parser(page["properties"][item]))
                 elif page["properties"][item]["type"] == "checkbox":
-                    page_iter.append(self.block_parser.checkbox_parser(page["properties"][item]))
+                    page_iter.append(self.base_parser.checkbox_parser(page["properties"][item]))
                 elif page["properties"][item]["type"] == "phone_number":
-                    page_iter.append(self.block_parser.phone_number_parser(page["properties"][item]))
+                    page_iter.append(self.base_parser.phone_number_parser(page["properties"][item]))
                 elif page["properties"][item]["type"] == "date":
-                    page_iter.append(self.block_parser.date_parser(page["properties"][item]))
+                    page_iter.append(self.base_parser.date_parser(page["properties"][item]))
                 elif page["properties"][item]["type"] == "people":
-                    page_iter.append(self.block_parser.people_parser(page["properties"][item]))
+                    page_iter.append(self.base_parser.people_parser(page["properties"][item]))
                 elif page["properties"][item]["type"] == "number":
-                    page_iter.append(self.block_parser.number_parser(page["properties"][item]))
+                    page_iter.append(self.base_parser.number_parser(page["properties"][item]))
                 elif page["properties"][item]["type"] == "files":
-                    page_iter.append(self.block_parser.files_parser(page["properties"][item], parser_type=self.parser_type))
+                    page_iter.append(self.base_parser.files_parser(page["properties"][item], parser_type=self.parser_type))
                 else:
                     logging.exception("unknown properties type:" + page["properties"][item]["type"])
 

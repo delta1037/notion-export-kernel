@@ -2,32 +2,42 @@
 # Date: 2022/01/08
 # mail:geniusrabbit@qq.com
 
-import os
-import logging
-
-from notion_client import Client, AsyncClient
-from notion_client import APIErrorCode, APIResponseError
-
-import NotionDump
-from NotionDump.utils import common_op
+from NotionDump.Dump.page import Page
+from NotionDump.Notion.Notion import NotionQuery
+from NotionDump.utils import internal_var
 
 
 # Block内容解析
 class Block:
     # 初始化
-    def __init__(self, block_id):
+    def __init__(self, block_id, query_handle: NotionQuery, export_child_pages=False, parser_type=internal_var.PARSER_TYPE_MD):
         self.block_id = block_id.replace('-', '')
+        self.query_handle = query_handle
+        # 是否导出子页面
+        self.export_child_page = export_child_pages
+        self.parser_type = parser_type
 
-        # 创建临时文件夹
-        self.tmp_dir = NotionDump.TMP_DIR
-        if not os.path.exists(self.tmp_dir):
-            os.mkdir(self.tmp_dir)
+        # 构造解析器
+        self.page_handle = Page(
+            page_id=self.block_id,
+            query_handle=self.query_handle,
+            export_child_pages=self.export_child_page,
+            parser_type=self.parser_type
+        )
+
+    # show_child_page
+    @staticmethod
+    def get_pages_detail():
+        return internal_var.PAGE_DIC
+
+    # 获取到所有的BLOCK数据
+    def page_to_md(self, md_name=None):
+        # 递归时第一个block单独作为一个main page存放
+        return self.page_handle.page_to_md(md_name=md_name)
+
+    def page_to_db(self):
+        return self.page_handle.page_to_db()
 
     # 源文件，直接输出成json; 辅助测试使用
-    def block_to_json(self, block_json, json_name=None):
-        if block_json is None:
-            return None
-
-        if json_name is None:
-            json_name = self.tmp_dir + self.block_id + ".json"
-        common_op.save_json_to_file(block_json, json_name)
+    def page_to_json(self, json_name=None):
+        return self.page_handle.page_to_json(json_name=json_name)

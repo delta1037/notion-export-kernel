@@ -2,6 +2,7 @@ import logging
 
 from NotionDump.Dump.database import Database
 from NotionDump.Notion.Notion import NotionQuery
+from NotionDump.utils import common_op
 
 TOKEN_TEST = "secret_WRLJ9xyEawNxzRhVHVWfciTl9FAyNCd29GMUvr2hQD4"
 DB_TABLE_INLINE_ID = "3b40cf6b60fc49edbe25740dd9a74af7"
@@ -15,8 +16,14 @@ def test_get_db_json_data(query):
 
 # 解析数据库内容测试：根据token和id解析数据库内容，得到临时CSV文件
 def test_db_table_inline_parser(query):
-    db_handle = Database(database_id=DB_TABLE_INLINE_ID, query_handle=query)
+    common_op.debug_log("test_db_table_inline_parser start")
+    db_handle = Database(database_id=DB_TABLE_INLINE_ID, query_handle=query, export_child_pages=True)
     db_handle.database_to_csv()
+
+    # 输出样例
+    page_detail_json = db_handle.get_pages_detail()
+    common_op.save_json_to_file(page_detail_json, "page_detail.json")
+    common_op.debug_log("test_db_table_inline_parser end")
 
 
 if __name__ == '__main__':

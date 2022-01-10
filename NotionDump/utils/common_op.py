@@ -76,6 +76,24 @@ def save_json_to_file(handle, json_name):
     file.close()
 
 
+# 判断是否添加额外的换行
+def parser_newline(last_type, now_type):
+    if last_type == "to_do" and now_type == "to_do":
+        return False
+    if last_type == "numbered_list_item" and now_type == "numbered_list_item":
+        return False
+    if last_type == "bulleted_list_item" and now_type == "bulleted_list_item":
+        return False
+    if last_type == "toggle" and now_type == "toggle":
+        return False
+    # 处理表格类型
+    if last_type == "table" and now_type == "table_row":
+        return False
+    if last_type == "table_row" and now_type == "table_row":
+        return False
+    return True
+
+
 def debug_log(debug_str):
     if NotionDump.DUMP_DEBUG:
         print(debug_str)

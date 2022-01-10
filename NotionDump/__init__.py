@@ -8,4 +8,4 @@ TMP_DIR = "./.tmp/"
 MD_DIVIDER = "------"
 
 # 开启调试
-DUMP_DEBUG = True
+DUMP_DEBUG = False
