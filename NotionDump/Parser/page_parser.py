@@ -3,37 +3,26 @@
 # mail:geniusrabbit@qq.com
 import os
 import logging
-from notion_client import Client, AsyncClient
 
 import NotionDump
+from NotionDump.Notion.Notion import NotionQuery
 from NotionDump.utils import internal_var
-from NotionDump.Api.database import Database
-from NotionDump.Api.block import Block
 from NotionDump.Parser.block_parser import BlockParser
 
 
 class PageParser:
-    def __init__(self, page_id, token=None, client_handle=None, async_api=False,
-                 parser_type=internal_var.PARSER_TYPE_PLAIN):
-        self.token = token
+    def __init__(self, page_id, query_handle: NotionQuery, parser_type=internal_var.PARSER_TYPE_PLAIN):
         self.page_id = page_id.replace('-', '')
+        self.query_handle = query_handle
+
+        if self.query_handle is None:
+            logging.exception("page parser init fail, client = NULL, page_id=" + self.page_id)
 
         # 创建临时文件夹
         self.tmp_dir = NotionDump.TMP_DIR
         if not os.path.exists(self.tmp_dir):
             os.mkdir(self.tmp_dir)
 
-        if client_handle is None and token is not None:
-            # 有的token话就初始化一下
-            if not async_api:
-                self.client = Client(auth=self.token)
-            else:
-                self.client = AsyncClient(auth=self.token)
-        else:
-            # 没有token，传进来handle就用，没传就不用
-            self.client = client_handle
-        if self.client is None:
-            logging.exception("page parser init fail, client = NULL, page_id=" + self.page_id)
         self.block_parser = BlockParser(block_id=self.page_id)
         self.parser_type = parser_type
 
@@ -69,14 +58,12 @@ class PageParser:
                 and block["type"] != "numbered_list_item" \
                 and block["type"] != "bulleted_list_item" \
                 and block["type"] != "toggle" \
-                and block["type"] != "table"\
+                and block["type"] != "table" \
                 and block["type"] != "table_row":
             return None
 
         # 获取块id下面的内容并继续解析
-        block_handle = Block(block["id"].replace('-', ''), token=self.token, client_handle=self.client)
-        # export_json=True 测试时导出json文件
-        block_list = block_handle.retrieve_block_children()["results"]
+        block_list = self.query_handle.retrieve_block_children(block["id"])["results"]
         # 如果没有获取到块，也返回空
         if len(block_list) == 0:
             return None
@@ -158,7 +145,7 @@ class PageParser:
                 # table直接递归即可
                 pass
             elif block_type == "table_row":
-                # Page child_database
+                # Page table_row
                 block_text += self.block_parser.table_row_parser(
                     block,
                     first_row=last_line_is_table,
@@ -172,9 +159,8 @@ class PageParser:
                 block_text += self.block_parser.child_page_parser(block, self.parser_type)
             elif block_type == "child_database":
                 # Page child_database
-                # Page中嵌套数据库的类型
-                db_handle = Database(database_id=block["id"], token=self.token, client_handle=self.client)
-                db_handle.database_to_csv()
+                # Page中嵌套数据库的类型，只保存页面，不进行解析
+                self.block_parser.child_database_parser(block)
             else:
                 logging.exception("unknown page block properties type:" + block_type)
 

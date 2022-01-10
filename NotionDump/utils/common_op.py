@@ -53,6 +53,14 @@ def is_page_recursion(page_id):
     return not internal_var.PAGE_DIC[page_id]["page_recursion"]
 
 
+# page 返回True，DB返回False
+def is_page(page_id):
+    if page_id not in internal_var.PAGE_DIC:
+        logging.log(logging.ERROR, "page id not exist!!!")
+        return True
+    return internal_var.PAGE_DIC[page_id]["type"] == "page"
+
+
 # 将文本保存为json文件
 def save_json_to_file(handle, json_name):
     try:

@@ -18,7 +18,7 @@
 ```shell
 notoin-dump
 ├─NotionDump
-│  ├─Api    # 与Notion通信
+│  ├─Dump    # 与Notion通信
 │  └─Parser # 解析Json数据
 └─Tests 	# 测试代码
 ```
@@ -48,7 +48,9 @@ Page导出需要Page id和一些必要的认证信息
 - [x] 一些变量规范，放置位置
 - [x] 返回的页面数据完善
 - [x] 返回所有页面表格（page + db）；记录文件位置，供给外层操作
+- [ ] 直接dump数据库时，递归获得子页面
 - [ ] page和CSV存储到SQL数据库
+
 
 需要深层解析的内容
 - [x] 各种列表

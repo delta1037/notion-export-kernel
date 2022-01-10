@@ -37,6 +37,19 @@
         "type": "page",
         "local_path": "./.tmp/7aa4cf88047642208064adc76290a285.md",
         "page_name": "Database测试",
-        "child_pages": []
+        "child_pages": [
+            "3b40cf6b-60fc-49ed-be25-740dd9a74af7"
+        ]
+    },
+    "3b40cf6b-60fc-49ed-be25-740dd9a74af7": {
+        "dumped": true,
+        "main_page": false,
+        "page_recursion": true,
+        "type": "database",
+        "local_path": "./.tmp/3b40cf6b60fc49edbe25740dd9a74af7.csv",
+        "page_name": "",
+        "child_pages": [
+            "8e15ad7510fe491c8d5a2f4a6fdbcfcf"
+        ]
     }
 }

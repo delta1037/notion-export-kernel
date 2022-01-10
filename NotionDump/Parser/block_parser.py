@@ -3,7 +3,6 @@
 # mail:geniusrabbit@qq.com
 import copy
 import logging
-from notion_client import Client, AsyncClient
 
 import NotionDump
 from NotionDump.utils import content_format
@@ -11,18 +10,8 @@ from NotionDump.utils import internal_var
 
 
 class BlockParser:
-    def __init__(self, block_id, token=None, client_handle=None, async_api=False):
-        self.token = token
+    def __init__(self, block_id):
         self.block_id = block_id.replace('-', '')
-        if client_handle is None and token is not None:
-            # 有的token话就初始化一下
-            if not async_api:
-                self.client = Client(auth=self.token)
-            else:
-                self.client = AsyncClient(auth=self.token)
-        else:
-            # 没有token，传进来handle就用，没传就不用
-            self.client = client_handle
 
         # 设置变量存放子page 字典
         self.child_pages = {}
@@ -30,7 +19,7 @@ class BlockParser:
     # 获取子页面字典，只返回一次，离台概不负责
     def get_child_pages_dic(self):
         child_pages = copy.deepcopy(self.child_pages)
-        self.child_pages.clear()
+        self.child_pages.clear()  # 清空已有的内容
         return child_pages
 
     # 文本的格式生成
@@ -188,6 +177,13 @@ class BlockParser:
         for cell in table_col_cells:
             table_row.append(self.__text_parser(cell[0], parser_type))
         return table_row
+
+    # 数据库页面
+    def database_page_parser(self, url):
+        page_id = url[url.rfind('/'):]
+        print(page_id)
+        # 解析url中的ID
+        self.child_pages[page_id] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
 
     # 数据库 title
     def title_parser(self, block_handle, parser_type=internal_var.PARSER_TYPE_PLAIN):
@@ -544,3 +540,13 @@ class BlockParser:
                 return content_format.get_page_format_md(page_id)
             else:
                 return content_format.get_page_format_plain(page_body["title"])
+
+    # Page child_database
+    def child_database_parser(self, block_handle):
+        if block_handle["type"] != "child_database":
+            logging.exception("child_database type error! parent_id= " + self.block_id + " id= " + block_handle["id"])
+            return ""
+
+        # 子数据库保存在页面表中，不解析
+        self.child_pages[block_handle["id"]] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
+        self.child_pages[block_handle["id"]]["type"] = "database"

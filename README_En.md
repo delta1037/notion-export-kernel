@@ -18,7 +18,7 @@ English version is updating...
 ```shell
 notoin-dump
 ├─NotionDump
-│  ├─Api    # 与Notion通信
+│  ├─Dump    # 与Notion通信
 │  └─Parser # 解析Json数据
 └─Tests 	# 测试代码
 ```

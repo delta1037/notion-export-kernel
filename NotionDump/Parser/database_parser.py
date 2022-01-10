@@ -5,36 +5,21 @@
 import csv
 import os
 import logging
-from notion_client import Client, AsyncClient
 
 import NotionDump
 from NotionDump.Parser.block_parser import BlockParser
 
 
 class DatabaseParser:
-    def __init__(self, database_id, token=None, client_handle=None, async_api=False):
+    def __init__(self, database_id):
         self.database_id = database_id.replace('-', '')
-        self.token = token
-        if client_handle is None and token is not None:
-            # 有的token话就初始化一下
-            if not async_api:
-                self.client = Client(auth=self.token)
-            else:
-                self.client = AsyncClient(auth=self.token)
-        else:
-            # 没有token，传进来handle就用，没传就不用
-            self.client = client_handle
 
         self.tmp_dir = NotionDump.TMP_DIR
         if not os.path.exists(self.tmp_dir):
             os.mkdir(self.tmp_dir)
 
-        # 这里虽然传入了但是也不会用到
-        self.block_parser = BlockParser(
-            block_id=self.database_id,
-            token=self.token,
-            client_handle=self.client
-        )
+        # 块解析器
+        self.block_parser = BlockParser(block_id=self.database_id)
 
     # 从一个页面里把列名给解析出来
     def __get_col_name_list(self, one_page):
@@ -53,8 +38,11 @@ class DatabaseParser:
         col_name_list.reverse()
         return col_name_list
 
+    def get_child_page_dic(self):
+        return self.block_parser.get_child_pages_dic()
+
     # 格式化存储，这里是临时文件存在方式（在外面转成数据库，或者最终输出CSV的格式）
-    def database_to_csv(self, database_handle, col_name_list=None):
+    def database_to_csv(self, database_handle, col_name_list=None, new_id=None):
         page_list = database_handle.get("results")
         # 数据库是空的，直接返回完事
         if len(page_list) == 0:
@@ -66,7 +54,11 @@ class DatabaseParser:
             col_name_list = self.__get_col_name_list(page_list[0])
 
         # 创建CSV文件
-        tmp_csv_filename = self.tmp_dir + self.database_id + ".csv"
+        if new_id is not None:
+            tmp_csv_filename = self.tmp_dir + new_id.replace('-', '') + ".csv"
+        else:
+            tmp_csv_filename = self.tmp_dir + self.database_id + ".csv"
+
         file = open(tmp_csv_filename, "w", encoding="utf-8", newline='')
         csv_writer = csv.writer(file)
         # 首先将列的名称写入到CSV文件中
@@ -76,6 +68,10 @@ class DatabaseParser:
         page_list.reverse()
         # 解析每一个page的内容
         for page in page_list:
+            # 每一个page都有page id
+            page_url = page["url"]
+            page_id = page_url[page_url.rfind('/')+1:]
+            # print("######### ", page_id)
             page_iter = []
             for item in col_name_list:
                 # 解析每一个方格的内容
