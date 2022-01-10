@@ -40,6 +40,9 @@ class Page:
     def get_pages_detail():
         return internal_var.PAGE_DIC
 
+    def __test_show_child_page(self):
+        print("in page_id: ", self.page_id, internal_var.PAGE_DIC)
+
     # 获取到所有的PAGE数据
     def page_to_md(self, md_name=None):
         page_json = self.query_handle.retrieve_block_children(self.page_id)
@@ -67,11 +70,13 @@ class Page:
         update_flag = False
         recursion_page = copy.deepcopy(internal_var.PAGE_DIC)
         for child_id in recursion_page:
-            # print("page id " + page_id)
-            # self.__test_show_child_page()
+            # 判断页面是否已经操作过
             if common_op.is_page_recursion(child_id):
                 update_flag = True
-
+                # 调试
+                if NotionDump.DUMP_DEBUG:
+                    print("# start child_page_id=", child_id)
+                    print(self.__test_show_child_page())
                 # 先更新页面的状态，无论获取成功或者失败都过去了，只获取一次
                 common_op.update_page_recursion(child_id, recursion=True)
 
@@ -97,8 +102,11 @@ class Page:
                 common_op.update_child_page_stats(child_id, dumped=True, local_path=tmp_filename)
                 # 从页面里获取到所有的子页面,并将子页面添加到父id中
                 common_op.update_child_pages(child_pages_dic, child_id)
-                # print("end")
-                # self.__test_show_child_page()
+
+                # 调试
+                if NotionDump.DUMP_DEBUG:
+                    print("# end child_page_id=", child_id)
+                    print(self.__test_show_child_page())
         if update_flag:
             self.__recursion_child_page()
 

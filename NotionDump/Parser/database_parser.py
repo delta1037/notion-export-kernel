@@ -8,11 +8,13 @@ import logging
 
 import NotionDump
 from NotionDump.Parser.block_parser import BlockParser
+from NotionDump.utils import internal_var
 
 
 class DatabaseParser:
-    def __init__(self, database_id):
+    def __init__(self, database_id, parser_type=internal_var.PARSER_TYPE_PLAIN):
         self.database_id = database_id.replace('-', '')
+        self.parser_type = parser_type
 
         self.tmp_dir = NotionDump.TMP_DIR
         if not os.path.exists(self.tmp_dir):
@@ -69,20 +71,20 @@ class DatabaseParser:
         # 解析每一个page的内容
         for page in page_list:
             # 每一个page都有page id
-            page_url = page["url"]
-            page_id = page_url[page_url.rfind('/')+1:]
-            # print("######### ", page_id)
+            page_id = page["id"].replace('-', '')
+            if NotionDump.DUMP_DEBUG:
+                print("# database page id", page_id)
             page_iter = []
             for item in col_name_list:
                 # 解析每一个方格的内容
                 if page["properties"][item]["type"] == "title":  # title
-                    page_iter.append(self.block_parser.title_parser(page["properties"][item]))
+                    page_iter.append(self.block_parser.title_parser(page["properties"][item], page_id, parser_type=self.parser_type))
                 elif page["properties"][item]["type"] == "multi_select":  # multi_select
                     page_iter.append(self.block_parser.multi_select_parser(page["properties"][item]))
                 elif page["properties"][item]["type"] == "select":
                     page_iter.append(self.block_parser.select_parser(page["properties"][item]))
                 elif page["properties"][item]["type"] == "rich_text":
-                    page_iter.append(self.block_parser.rich_text_parser(page["properties"][item]))
+                    page_iter.append(self.block_parser.rich_text_parser(page["properties"][item], parser_type=self.parser_type))
                 elif page["properties"][item]["type"] == "url":
                     page_iter.append(self.block_parser.url_parser(page["properties"][item]))
                 elif page["properties"][item]["type"] == "email":
@@ -98,7 +100,7 @@ class DatabaseParser:
                 elif page["properties"][item]["type"] == "number":
                     page_iter.append(self.block_parser.number_parser(page["properties"][item]))
                 elif page["properties"][item]["type"] == "files":
-                    page_iter.append(self.block_parser.files_parser(page["properties"][item]))
+                    page_iter.append(self.block_parser.files_parser(page["properties"][item], parser_type=self.parser_type))
                 else:
                     logging.exception("unknown properties type:" + page["properties"][item]["type"])
 

@@ -6,6 +6,7 @@ import json
 import logging
 from json import JSONDecodeError
 
+import NotionDump
 from NotionDump.utils import internal_var
 
 
@@ -73,3 +74,8 @@ def save_json_to_file(handle, json_name):
     file.write(json_handle)
     file.flush()
     file.close()
+
+
+def debug_log(debug_str):
+    if NotionDump.DUMP_DEBUG:
+        print(debug_str)

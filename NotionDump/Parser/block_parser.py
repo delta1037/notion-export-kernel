@@ -5,7 +5,7 @@ import copy
 import logging
 
 import NotionDump
-from NotionDump.utils import content_format
+from NotionDump.utils import content_format, common_op
 from NotionDump.utils import internal_var
 
 
@@ -146,6 +146,7 @@ class BlockParser:
             mention_plain = self.__user_parser(mention_body)
         elif mention_body["type"] == "page":
             page_id = self.__page_parser(mention_body)
+            common_op.debug_log("__mention_parser add page id = " + page_id)
             # TODO 这里先生成一个本地的page链接，后续再把相关的页面生成
             self.child_pages[page_id] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
             # 获取页面的名字
@@ -178,19 +179,20 @@ class BlockParser:
             table_row.append(self.__text_parser(cell[0], parser_type))
         return table_row
 
-    # 数据库页面
-    def database_page_parser(self, url):
-        page_id = url[url.rfind('/'):]
-        print(page_id)
-        # 解析url中的ID
-        self.child_pages[page_id] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
-
     # 数据库 title
-    def title_parser(self, block_handle, parser_type=internal_var.PARSER_TYPE_PLAIN):
+    def title_parser(self, block_handle, page_id, parser_type=internal_var.PARSER_TYPE_PLAIN):
         if block_handle["type"] != "title":
             logging.exception("title type error! parent_id= " + self.block_id + " id= " + block_handle["id"])
             return ""
-        return self.__text_list_parser(block_handle["title"], parser_type)
+        title_ret = self.__text_list_parser(block_handle["title"], parser_type)
+        if title_ret != "":
+            # 如果存在子Page就加入到待解析队列
+            common_op.debug_log("title ret = " + title_ret)
+            common_op.debug_log("title_parser add page id = " + page_id)
+            self.child_pages[page_id] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
+            self.child_pages[page_id]["type"] = "page"
+            self.child_pages[page_id]["page_name"] = title_ret
+        return title_ret
 
     # 数据库 rich_text
     def rich_text_parser(self, block_handle, parser_type=internal_var.PARSER_TYPE_PLAIN):
@@ -532,7 +534,7 @@ class BlockParser:
             page_id = (block_handle["id"]).replace('-', '')
 
             # 保存子页面信息
-            # print("child page id", page_id)
+            common_op.debug_log("child_page_parser add page id = " + page_id)
             self.child_pages[page_id] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
             self.child_pages[page_id]["page_name"] = page_body["title"]
 
@@ -548,5 +550,7 @@ class BlockParser:
             return ""
 
         # 子数据库保存在页面表中，不解析
-        self.child_pages[block_handle["id"]] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
-        self.child_pages[block_handle["id"]]["type"] = "database"
+        child_db_id = block_handle["id"].replace('-', '')
+        self.child_pages[child_db_id] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
+        self.child_pages[child_db_id]["type"] = "database"
+        common_op.debug_log("child_database_parser add page id = " + child_db_id)

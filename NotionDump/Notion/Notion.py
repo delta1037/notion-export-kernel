@@ -1,9 +1,12 @@
 # author: delta1037
 # Date: 2022/01/10
 # mail:geniusrabbit@qq.com
+import os
 import logging
 
 import NotionDump
+from NotionDump.utils import common_op
+
 from notion_client import Client, AsyncClient
 from notion_client import APIErrorCode, APIResponseError
 
@@ -24,6 +27,11 @@ class NotionQuery:
         if self.client is None:
             logging.exception("notion query init fail")
 
+        # 创建临时文件夹
+        self.tmp_dir = NotionDump.TMP_DIR
+        if not os.path.exists(self.tmp_dir):
+            os.mkdir(self.tmp_dir)
+
     # 获取该块下所有的子块
     def retrieve_block_children(self, block_id, page_size=50):
         query_post = {
@@ -43,6 +51,8 @@ class NotionQuery:
                     **query_post
                 )
                 next_cur = db_query_ret["next_cursor"]
+            if NotionDump.DUMP_DEBUG:
+                self.__save_to_json(query_ret, block_id, prefix="retrieve_")
             return query_ret
         except APIResponseError as error:
             if NotionDump.DUMP_DEBUG:
@@ -80,7 +90,10 @@ class NotionQuery:
                 db_query_ret = self.client.databases.query(
                     **query_post
                 )
+                # TODO 这里还没有将内容搞出来
                 next_cur = db_query_ret["next_cursor"]
+            if NotionDump.DUMP_DEBUG:
+                self.__save_to_json(query_ret, database_id, prefix="query_")
             return query_ret
         except APIResponseError as error:
             if NotionDump.DUMP_DEBUG:
@@ -101,7 +114,10 @@ class NotionQuery:
     # 获取数据库信息
     def retrieve_database(self, database_id):
         try:
-            return self.client.databases.retrieve(database_id=database_id)
+            retrieve_ret = self.client.databases.retrieve(database_id=database_id)
+            if NotionDump.DUMP_DEBUG:
+                self.__save_to_json(retrieve_ret, database_id, prefix="retrieve_")
+            return retrieve_ret
         except APIResponseError as error:
             if NotionDump.DUMP_DEBUG:
                 if error.code == APIErrorCode.ObjectNotFound:
@@ -121,7 +137,10 @@ class NotionQuery:
     # 获取Page的信息
     def retrieve_page(self, page_id):
         try:
-            return self.client.pages.retrieve(page_id=page_id)
+            retrieve_ret = self.client.pages.retrieve(page_id=page_id)
+            if NotionDump.DUMP_DEBUG:
+                self.__save_to_json(retrieve_ret, page_id, prefix="retrieve_")
+            return retrieve_ret
         except APIResponseError as error:
             if NotionDump.DUMP_DEBUG:
                 if error.code == APIErrorCode.ObjectNotFound:
@@ -137,3 +156,12 @@ class NotionQuery:
             else:
                 logging.exception("Page Retrieve Not found or no authority, id=" + page_id)
         return None
+
+    # 源文件，直接输出成json; 辅助测试使用
+    def __save_to_json(self, page_json, json_id, json_name=None, prefix=None):
+        if json_name is None:
+            if prefix is not None:
+                json_name = self.tmp_dir + prefix + json_id + ".json"
+            else:
+                json_name = self.tmp_dir + json_id + ".json"
+        common_op.save_json_to_file(page_json, json_name)
