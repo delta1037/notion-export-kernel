@@ -1,14 +1,15 @@
 # author: delta1037
 # Date: 2022/01/08
 # mail:geniusrabbit@qq.com
-import logging
-from notion_client import Client
-from notion_client import AsyncClient
-from notion_client import APIErrorCode, APIResponseError
-import json
-from json import JSONDecodeError
-import NotionDump
+
 import os
+import logging
+
+from notion_client import Client, AsyncClient
+from notion_client import APIErrorCode, APIResponseError
+
+import NotionDump
+from NotionDump.utils import common_op
 
 
 # Block内容解析
@@ -50,31 +51,31 @@ class Block:
                 )
                 next_cur = db_query_ret["next_cursor"]
 
-            if export_json:
+            if NotionDump.DUMP_DEBUG or export_json:
+                # 调试时输出所有的子页面
                 self.block_to_json(query_ret)
             return query_ret
         except APIResponseError as error:
-            if error.code == APIErrorCode.ObjectNotFound:
-                logging.exception("Block " + self.block_id + " is invalid")
+            if NotionDump.DUMP_DEBUG:
+                if error.code == APIErrorCode.ObjectNotFound:
+                    logging.exception("Block " + self.block_id + " Retrieve child is invalid")
+                else:
+                    # Other error handling code
+                    logging.exception(error)
             else:
-                # Other error handling code
-                logging.exception(error)
+                logging.exception("Block " + self.block_id + " Retrieve child is invalid")
+        except Exception as e:
+            if NotionDump.DUMP_DEBUG:
+                logging.exception(e)
+            else:
+                logging.exception("Block " + self.block_id + " Not found or no authority")
         return None
 
     # 源文件，直接输出成json; 辅助测试使用
     def block_to_json(self, block_json, json_name=None):
         if block_json is None:
             return None
-        json_handle = None
-        try:
-            json_handle = json.dumps(block_json, ensure_ascii=False, indent=4)
-        except JSONDecodeError:
-            print("json decode error")
-            return
 
         if json_name is None:
             json_name = self.tmp_dir + self.block_id + ".json"
-        file = open(json_name, "w+", encoding="utf-8")
-        file.write(json_handle)
-        return
-
+        common_op.save_json_to_file(block_json, json_name)

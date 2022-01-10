@@ -1,21 +1,22 @@
 # author: delta1037
 # Date: 2022/01/08
 # mail:geniusrabbit@qq.com
+
+import os
 import logging
 import shutil
-import os
-from notion_client import Client
-from notion_client import AsyncClient
+
+from notion_client import Client, AsyncClient
 from notion_client import APIErrorCode, APIResponseError
-import json
-from json import JSONDecodeError
+
 import NotionDump
 from NotionDump.Parser.database_parser import DatabaseParser
+from NotionDump.utils import common_op
 
 
 class Database:
     # 初始化
-    def __init__(self, database_id, token, client_handle=None, async_api=False):
+    def __init__(self, database_id, token, client_handle=None, async_api=False, export_child_pages=False):
         self.token = token
         self.database_id = database_id.replace('-', '')
         if client_handle is None:
@@ -34,9 +35,11 @@ class Database:
         if not os.path.exists(self.tmp_dir):
             os.mkdir(self.tmp_dir)
 
+        # 是否导出子页面
+        self.export_child_page = export_child_pages
+
     # 获取到所有的数据库数据(JSon格式)
     def query_database(self, db_q_filter="{}", db_q_sorts="[]"):
-        query_ret = "{}"
         # 组合查询条件
         query_post = {"database_id": self.database_id}
         if db_q_sorts != "[]":
@@ -58,11 +61,19 @@ class Database:
                 next_cur = db_query_ret["next_cursor"]
             return query_ret
         except APIResponseError as error:
-            if error.code == APIErrorCode.ObjectNotFound:
-                logging.exception("Database is invalid")
+            if NotionDump.DUMP_DEBUG:
+                if error.code == APIErrorCode.ObjectNotFound:
+                    logging.exception("Database Query is invalid, id=" + self.database_id)
+                else:
+                    # Other error handling code
+                    logging.exception(error)
             else:
-                # Other error handling code
-                logging.exception(error)
+                logging.exception("Database Query is invalid, id=" + self.database_id)
+        except Exception as e:
+            if NotionDump.DUMP_DEBUG:
+                logging.exception(e)
+            else:
+                logging.exception("Database Query Not found or no authority, id=" + self.database_id)
         return None
 
     # 获取数据库信息
@@ -70,12 +81,19 @@ class Database:
         try:
             return self.client.databases.retrieve(database_id=self.database_id)
         except APIResponseError as error:
-            if error.code == APIErrorCode.ObjectNotFound:
-                logging.exception("Database is invalid")
+            if NotionDump.DUMP_DEBUG:
+                if error.code == APIErrorCode.ObjectNotFound:
+                    logging.exception("Database Retrieve is invalid, id=" + self.database_id)
+                else:
+                    # Other error handling code
+                    logging.exception(error)
             else:
-                # Other error handling code
-                logging.exception(error)
-
+                logging.exception("Database Retrieve is invalid, id=" + self.database_id)
+        except Exception as e:
+            if NotionDump.DUMP_DEBUG:
+                logging.exception(e)
+            else:
+                logging.exception("Database Retrieve Not found or no authority, id=" + self.database_id)
         return None
 
     # 获取到所有的数据库数据(CSV格式)(数据库导出均是CSV)
@@ -104,15 +122,7 @@ class Database:
         db_json = self.query_database(db_q_filter=db_q_filter, db_q_sorts=db_q_sorts)
         if db_json is None:
             return None
-        json_handle = None
-        try:
-            json_handle = json.dumps(db_json, ensure_ascii=False, indent=4)
-        except JSONDecodeError:
-            print("json decode error")
-            return
 
         if json_name is None:
             json_name = self.tmp_dir + self.database_id + ".json"
-        file = open(json_name, "w+", encoding="utf-8")
-        file.write(json_handle)
-        return
+        common_op.save_json_to_file(db_json, json_name)

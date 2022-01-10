@@ -1,9 +1,11 @@
 # author: delta1037
 # Date: 2022/01/08
 # mail:geniusrabbit@qq.com
-import logging
+
 import csv
 import os
+import logging
+from notion_client import Client, AsyncClient
 
 import NotionDump
 from NotionDump.Parser.block_parser import BlockParser
@@ -13,7 +15,16 @@ class DatabaseParser:
     def __init__(self, database_id, token=None, client_handle=None, async_api=False):
         self.database_id = database_id.replace('-', '')
         self.token = token
-        self.client = client_handle
+        if client_handle is None and token is not None:
+            # 有的token话就初始化一下
+            if not async_api:
+                self.client = Client(auth=self.token)
+            else:
+                self.client = AsyncClient(auth=self.token)
+        else:
+            # 没有token，传进来handle就用，没传就不用
+            self.client = client_handle
+
         self.tmp_dir = NotionDump.TMP_DIR
         if not os.path.exists(self.tmp_dir):
             os.mkdir(self.tmp_dir)

@@ -1,4 +1,5 @@
 from NotionDump.Api.page import Page
+from NotionDump.utils import common_op
 
 TOKEN_TEST = "secret_WRLJ9xyEawNxzRhVHVWfciTl9FAyNCd29GMUvr2hQD4"
 PAGE_MIX_ID = "950e57e0507b4448a55a13b2f47f031f"
@@ -14,6 +15,10 @@ def test_get_page_json_data():
 def test_page_parser():
     page_handle = Page(token=TOKEN_TEST, page_id=PAGE_MIX_ID, export_child_pages=True)
     page_handle.page_to_md()
+
+    # 输出样例
+    page_detail_json = page_handle.get_pages_detail()
+    common_op.save_json_to_file(page_detail_json, "page_detail.json")
 
 
 if __name__ == '__main__':

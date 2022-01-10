@@ -1,20 +1,19 @@
 # author: delta1037
 # Date: 2022/01/08
 # mail:geniusrabbit@qq.com
-import json
+
+import os
 import logging
 import shutil
-from json import JSONDecodeError
 
-from notion_client import Client
-from notion_client import AsyncClient
+from notion_client import Client, AsyncClient
 from notion_client import APIErrorCode, APIResponseError
-import os
 
 import NotionDump
 from NotionDump.Parser.page_parser import PageParser
 from NotionDump.Api.block import Block
 from NotionDump.utils import common_op
+from NotionDump.utils import internal_var
 
 
 class Page:
@@ -30,7 +29,8 @@ class Page:
         else:
             self.client = client_handle
         # 这里传入handle是为了子块的解析
-        self.page_parser = PageParser(self.page_id, client_handle=self.client, parser_type=NotionDump.PARSER_TYPE_MD)
+        self.page_parser = PageParser(self.page_id, client_handle=self.client,
+                                      parser_type=internal_var.PARSER_TYPE_MD)
         # 页面的操作就是块的操作
         self.block_handle = Block(
             block_id=self.page_id,
@@ -43,30 +43,32 @@ class Page:
         if not os.path.exists(self.tmp_dir):
             os.mkdir(self.tmp_dir)
 
-        # 设置变量存放子page 字典
-        self.child_pages = {}
+        # 是否导出子页面
         self.export_child_page = export_child_pages
 
-    def __update_child_pages(self, child_pages):
-        for item in child_pages:
-            if item not in self.child_pages:
-                # 如果现有的列表里没有这一条,则新加一条
-                self.child_pages[item] = child_pages[item]
-
     # show_child_page
-    def __test_show_child_page(self):
-        print(self.child_pages)
+    @staticmethod
+    def get_pages_detail():
+        return internal_var.PAGE_DIC
 
     # 获取Page的信息
     def retrieve_page(self):
         try:
             return self.client.pages.retrieve(page_id=self.page_id)
         except APIResponseError as error:
-            if error.code == APIErrorCode.ObjectNotFound:
-                logging.exception("Database is invalid")
+            if NotionDump.DUMP_DEBUG:
+                if error.code == APIErrorCode.ObjectNotFound:
+                    logging.exception("Page Retrieve is invalid, id=" + self.page_id)
+                else:
+                    # Other error handling code
+                    logging.exception(error)
             else:
-                # Other error handling code
-                logging.exception(error)
+                logging.exception("Page Retrieve is invalid, id=" + self.page_id)
+        except Exception as e:
+            if NotionDump.DUMP_DEBUG:
+                logging.exception(e)
+            else:
+                logging.exception("Page Retrieve Not found or no authority, id=" + self.page_id)
         return None
 
     # 获取Page的所有块(这里page相当于是一个母块，要获取改母块下所有的子块)
@@ -79,14 +81,16 @@ class Page:
         if page_json is None:
             return False
         # 解析到临时文件中
-        tmp_csv_filename = self.page_parser.page_to_md(page_json)
+        tmp_md_filename = self.page_parser.page_to_md(page_json)
 
-        # 更新已经获取到的页面的状态
-        common_op.update_child_page_stats(self.child_pages, self.page_id, dumped=True)
-        # 从页面里获取到所有的子页面
-        self.__update_child_pages(self.page_parser.get_child_pages_dic())
+        # 更新已经获取到的页面的状态(现有内容，再更新状态)
+        common_op.update_child_page_stats(self.page_id, dumped=True, main_page=True,
+                                          local_path=tmp_md_filename)
+        common_op.update_page_recursion(self.page_id, recursion=True)
+        # 从页面里获取到所有的子页面,并将子页面添加到父id中
+        common_op.update_child_pages(self.page_parser.get_child_pages_dic(), self.page_id)
         if md_name is not None:
-            shutil.copyfile(tmp_csv_filename, md_name)
+            shutil.copyfile(tmp_md_filename, md_name)
 
         if self.export_child_page:
             self.__recursion_child_page()
@@ -94,28 +98,28 @@ class Page:
 
     def __recursion_child_page(self):
         update_flag = False
-        for page_id in self.child_pages:
+        for page_id in internal_var.PAGE_DIC:
             # print("page id " + page_id)
             # self.__test_show_child_page()
-            if not self.child_pages[page_id]["dumped"]:
+            if common_op.is_page_recursion(page_id):
                 update_flag = True
                 # print("begin")
                 # self.__test_show_child_page()
                 block_handle = Block(page_id, self.token, self.client)
-
-                # 测试 export_json=True
                 page_json = block_handle.retrieve_block_children()
-                # 更新已经获取到的页面的状态，无论获取成功或者失败都过去了，只获取一次
-                common_op.update_child_page_stats(self.child_pages, page_id, dumped=True)
+                # 先更新页面的状态，无论获取成功或者失败都过去了，只获取一次
+                common_op.update_page_recursion(page_id, recursion=True)
                 if page_json is None:
                     logging.log(logging.ERROR, "get page error, id=" + page_id)
                     continue
 
                 # 解析到临时文件中
                 # print("parser page id " + page_id)
-                self.page_parser.page_to_md(page_json, new_id=page_id)
-                # 从页面里获取到所有的子页面
-                self.__update_child_pages(self.page_parser.get_child_pages_dic())
+                tmp_md_filename = self.page_parser.page_to_md(page_json, new_id=page_id)
+                # 再更新本地的存放路径
+                common_op.update_child_page_stats(page_id, dumped=True, local_path=tmp_md_filename)
+                # 从页面里获取到所有的子页面,并将子页面添加到父id中
+                common_op.update_child_pages(self.page_parser.get_child_pages_dic(), page_id)
                 # print("end")
                 # self.__test_show_child_page()
         if update_flag:
@@ -136,15 +140,8 @@ class Page:
         page_json = self.query_page()
         if page_json is None:
             return None
-        json_handle = None
-        try:
-            json_handle = json.dumps(page_json, ensure_ascii=False, indent=4)
-        except JSONDecodeError:
-            print("json decode error")
-            return
 
         if json_name is None:
             json_name = self.tmp_dir + self.page_id + ".json"
-        file = open(json_name, "w+", encoding="utf-8")
-        file.write(json_handle)
+        common_op.save_json_to_file(page_json, json_name)
         return
