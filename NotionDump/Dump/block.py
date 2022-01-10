@@ -31,13 +31,13 @@ class Block:
         return internal_var.PAGE_DIC
 
     # 获取到所有的BLOCK数据
-    def page_to_md(self, md_name=None):
+    def dump_to_file(self, file_name=None):
         # 递归时第一个block单独作为一个main page存放
-        return self.page_handle.page_to_md(md_name=md_name)
+        return self.page_handle.dump_to_file(file_name=file_name)
 
-    def page_to_db(self):
-        return self.page_handle.page_to_db()
+    def dump_to_db(self):
+        return self.page_handle.dump_to_db()
 
     # 源文件，直接输出成json; 辅助测试使用
-    def page_to_json(self, json_name=None):
-        return self.page_handle.page_to_json(json_name=json_name)
+    def dump_to_json(self, json_name=None):
+        return self.page_handle.dump_to_json(json_name=json_name)

@@ -9,3 +9,7 @@ MD_DIVIDER = "------"
 
 # 开启调试
 DUMP_DEBUG = False
+
+DUMP_TYPE_BLOCK = 1
+DUMP_TYPE_PAGE = 2
+DUMP_TYPE_DB_TABLE = 4

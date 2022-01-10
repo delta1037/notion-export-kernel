@@ -1,6 +1,8 @@
 import logging
 
+import NotionDump
 from NotionDump.Dump.block import Block
+from NotionDump.Dump.dump import Dump
 from NotionDump.Notion.Notion import NotionQuery
 
 TOKEN_TEST = "secret_WRLJ9xyEawNxzRhVHVWfciTl9FAyNCd29GMUvr2hQD4"
@@ -10,8 +12,13 @@ RER_LIST_ID = "d32db4693409464b9981caec9ef11974"
 
 # 页面表格测试
 def test_get_table_block(query):
-    block_handle = Block(block_id=TABLE_ID, query_handle=query, export_child_pages=True)
-    block_handle.page_to_md()
+    block_handle = Dump(
+        dump_id=TABLE_ID,
+        query_handle=query,
+        export_child_pages=True,
+        dump_type=NotionDump.DUMP_TYPE_BLOCK
+    )
+    block_handle.dump_to_file()
 
     # 输出样例
     print("page table test")
@@ -21,8 +28,13 @@ def test_get_table_block(query):
 # 递归列表测试
 def test_get_rer_list(query):
     print("page rer list test")
-    block_handle = Block(block_id=RER_LIST_ID, query_handle=query, export_child_pages=True)
-    block_handle.page_to_md()
+    block_handle = Dump(
+        dump_id=RER_LIST_ID,
+        query_handle=query,
+        export_child_pages=True,
+        dump_type=NotionDump.DUMP_TYPE_BLOCK
+    )
+    block_handle.dump_to_file()
 
     # 输出样例
     print(block_handle.get_pages_detail())

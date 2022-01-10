@@ -40,7 +40,7 @@ class Database:
         return internal_var.PAGE_DIC
 
     # 获取到所有的数据库数据(CSV格式)(数据库导出均是CSV)
-    def database_to_csv(self, csv_name=None, col_name_list=None, db_q_filter="{}", db_q_sorts="[]"):
+    def dump_to_file(self, file_name=None, col_name_list=None, db_q_filter="{}", db_q_sorts="[]"):
         db_json = self.query_handle.query_database(
             database_id=self.database_id,
             db_q_filter=db_q_filter,
@@ -54,13 +54,13 @@ class Database:
             logging.exception("page parser fail, id=" + self.database_id)
             return ""
 
-        if csv_name is not None:
-            shutil.copyfile(tmp_csv_filename, csv_name)
-            return csv_name
+        if file_name is not None:
+            shutil.copyfile(tmp_csv_filename, file_name)
+            return file_name
 
         return tmp_csv_filename
 
-    def database_to_db(self, col_name_list=None, db_q_filter="{}", db_q_sorts="[]"):
+    def dump_to_db(self, col_name_list=None, db_q_filter="{}", db_q_sorts="[]"):
         # 从配置文件中获取数据库配置，打开数据库，并将csv文件写入到数据库中
         db_json = self.query_handle.query_database(
             database_id=self.database_id,
@@ -69,12 +69,11 @@ class Database:
         if db_json is None:
             return ""
 
-        tmp_csv_filename = self.database_parser.database_to_csv(db_json, col_name_list)
         # TODO 将CSV文件写入到数据库；调用SQL中的notion2sql提供的接口
-        return tmp_csv_filename
+        return
 
     # 源文件，直接输出成json; 辅助测试使用
-    def database_to_json(self, json_name=None, db_q_filter="{}", db_q_sorts="[]"):
+    def dump_to_json(self, json_name=None, db_q_filter="{}", db_q_sorts="[]"):
         db_json = self.query_handle.query_database(
             database_id=self.database_id,
             db_q_filter=db_q_filter,

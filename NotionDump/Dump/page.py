@@ -43,7 +43,7 @@ class Page:
         return internal_var.PAGE_DIC
 
     # 获取到所有的PAGE数据
-    def page_to_md(self, md_name=None):
+    def dump_to_file(self, file_name=None):
         page_json = self.query_handle.retrieve_block_children(self.page_id)
         if page_json is None:
             return False
@@ -53,24 +53,23 @@ class Page:
             logging.exception("page parser fail, id="+self.page_id)
             return ""
 
-        if md_name is not None:
-            shutil.copyfile(tmp_md_filename, md_name)
-            return md_name
+        if file_name is not None:
+            shutil.copyfile(tmp_md_filename, file_name)
+            return file_name
 
         return tmp_md_filename
 
-    def page_to_db(self):
+    def dump_to_db(self):
         # 从配置文件中获取数据库配置，打开数据库，并将csv文件写入到数据库中
         page_json = self.query_handle.retrieve_block_children(self.page_id)
         if page_json is None:
             return None
 
-        # tmp_csv_filename = self.database_parser.database_to_csv(db_json, col_name_list)
         # TODO 将Md文件写入到数据库;调用SQL中的notion2sql提供的接口
         return
 
     # 源文件，直接输出成json; 辅助测试使用
-    def page_to_json(self, json_name=None):
+    def dump_to_json(self, json_name=None):
         page_json = self.query_handle.retrieve_block_children(self.page_id)
         if page_json is None:
             return None
