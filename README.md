@@ -1,4 +1,4 @@
-# notion-dump
+# notion-dump-kernel
 
 [English_Version](https://github.com/delta1037/notion-dump/blob/main/README_En.md)
 
@@ -32,7 +32,26 @@ notoin-dump
 
 ## 三、使用方法
 
-目前改项目未打包成pip包，所以可以拷贝下来使用
+### 3.0 安装导入
+
+**安装`notion-dump-kernel`**
+
+```powershell
+# 打开终端，输入如下命令安装（测试通过版本为0.0.3）
+pip install notion-dump-kernel
+# 或者
+pip install notion-dump-kernel==0.0.3
+```
+
+**导入使用**
+
+```python
+import NotionDump
+from NotionDump.Dump.dump import Dump
+from NotionDump.Notion.Notion import NotionQuery
+```
+
+
 
 ### 3.1 对外统一接口
 
@@ -69,8 +88,8 @@ dump的结果存放在一个字典变量中，改变量包含了外部可以操�
 
 ```python
 # 获取输出
-handle.get_pages_detail()
-# 其中handle为上述的操作句柄（Dump(xxx)返回值）
+dump_output = dump_handle.dump_to_file()
+# 其中dump_handle为上述的操作句柄（Dump(xxx)返回值）
 ```
 
 ```json
@@ -119,4 +138,12 @@ handle.get_pages_detail()
 
 - [ ] 评论内容无法获取到
 - [ ] 数据库CSV只是存了下来，但是本地查看因为没有格式极其不方便
+
+
+
+## 附录
+
+### 项目测试
+
+[项目测试页面](https://delta1037.notion.site/Notion-dump-ed0a3b0f57b34712bc6bafcbdb413d50)
 

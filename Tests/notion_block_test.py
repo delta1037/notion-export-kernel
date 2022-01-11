@@ -18,11 +18,11 @@ def test_get_table_block(query):
         export_child_pages=True,
         dump_type=NotionDump.DUMP_TYPE_BLOCK
     )
-    block_handle.dump_to_file()
+    page_detail_json = block_handle.dump_to_file()
 
     # 输出样例
     print("page table test")
-    print(block_handle.get_pages_detail())
+    print(page_detail_json)
 
 
 # 递归列表测试
@@ -34,10 +34,10 @@ def test_get_rer_list(query):
         export_child_pages=True,
         dump_type=NotionDump.DUMP_TYPE_BLOCK
     )
-    block_handle.dump_to_file()
+    page_detail_json = block_handle.dump_to_file()
 
     # 输出样例
-    print(block_handle.get_pages_detail())
+    print(page_detail_json)
 
 
 if __name__ == '__main__':

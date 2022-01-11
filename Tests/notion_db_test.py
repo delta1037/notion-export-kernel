@@ -30,10 +30,9 @@ def test_db_table_inline_parser(query):
         export_child_pages=True,
         dump_type=NotionDump.DUMP_TYPE_DB_TABLE
     )
-    db_handle.dump_to_file()
+    page_detail_json = db_handle.dump_to_file()
 
     # 输出样例
-    page_detail_json = db_handle.get_pages_detail()
     common_op.save_json_to_file(page_detail_json, "page_detail.json")
     common_op.debug_log("test_db_table_inline_parser end")
 

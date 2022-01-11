@@ -1,6 +1,7 @@
 # author: delta1037
 # Date: 2022/01/08
 # mail:geniusrabbit@qq.com
+import copy
 import logging
 
 import NotionDump
@@ -51,7 +52,7 @@ class Dump:
 
     # show_child_page
     @staticmethod
-    def get_pages_detail():
+    def __get_pages_detail():
         return internal_var.PAGE_DIC
 
     # 获取到所有的BLOCK数据
@@ -60,17 +61,31 @@ class Dump:
             logging.exception("dump init fail")
             return ""
         # 递归时第一个block单独作为一个main page存放
-        return self.handle.dump_to_file(file_name=file_name)
+        self.handle.dump_to_file(file_name=file_name)
+
+        pages_detail = copy.deepcopy(internal_var.PAGE_DIC)
+        internal_var.PAGE_DIC = {}
+        return pages_detail
 
     def dump_to_db(self):
         if self.handle is None:
             logging.exception("dump init fail")
             return ""
-        return self.handle.dump_to_db()
+        # 将内容导出到数据库
+        self.handle.dump_to_db()
+
+        pages_detail = copy.deepcopy(internal_var.PAGE_DIC)
+        internal_var.PAGE_DIC = {}
+        return pages_detail
 
     # 源文件，直接输出成json; 辅助测试使用
     def dump_to_json(self, json_name=None):
         if self.handle is None:
             logging.exception("dump init fail")
             return ""
-        return self.handle.dump_to_json(json_name=json_name)
+
+        self.handle.dump_to_json(json_name=json_name)
+
+        pages_detail = copy.deepcopy(internal_var.PAGE_DIC)
+        internal_var.PAGE_DIC = {}
+        return pages_detail

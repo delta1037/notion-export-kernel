@@ -29,10 +29,9 @@ def test_page_parser(query):
         export_child_pages=True,
         dump_type=NotionDump.DUMP_TYPE_PAGE
     )
-    page_handle.dump_to_file()
+    page_detail_json = page_handle.dump_to_file()
 
     # 输出样例
-    page_detail_json = page_handle.get_pages_detail()
     common_op.save_json_to_file(page_detail_json, "page_detail.json")
 
 
