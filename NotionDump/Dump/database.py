@@ -14,7 +14,7 @@ from NotionDump.utils import common_op, internal_var
 
 class Database:
     # 初始化
-    def __init__(self, database_id, query_handle: NotionQuery, export_child_pages=False, parser_type=internal_var.PARSER_TYPE_MD):
+    def __init__(self, database_id, query_handle: NotionQuery, export_child_pages=False, parser_type=NotionDump.PARSER_TYPE_MD):
         self.database_id = database_id.replace('-', '')
         self.query_handle = query_handle
         # 是否导出子页面
@@ -49,7 +49,7 @@ class Database:
             return ""
 
         # 解析到临时文件中
-        tmp_csv_filename = self.mix_parser.mix_parser(json_handle=db_json, json_type="database")
+        tmp_csv_filename = self.mix_parser.mix_parser(json_handle=db_json, json_type="database", col_name_list=col_name_list)
         if tmp_csv_filename is None:
             logging.exception("page parser fail, id=" + self.database_id)
             return ""

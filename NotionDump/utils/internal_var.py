@@ -2,10 +2,6 @@
 # Date: 2022/01/08
 # mail:geniusrabbit@qq.com
 
-# 解析的类型：分为Markdown和纯文本
-PARSER_TYPE_MD = 0
-PARSER_TYPE_PLAIN = 2
-
 # 导出页面结构
 PAGE_DIC = {}
 

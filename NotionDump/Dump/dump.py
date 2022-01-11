@@ -18,7 +18,7 @@ class Dump:
             dump_id,
             query_handle: NotionQuery,
             export_child_pages=False,
-            parser_type=internal_var.PARSER_TYPE_MD,
+            parser_type=NotionDump.PARSER_TYPE_MD,
             dump_type=NotionDump.DUMP_TYPE_PAGE
     ):
         self.dump_id = dump_id.replace('-', '')

@@ -12,7 +12,11 @@ from NotionDump.utils import internal_var
 
 
 class DatabaseParser:
-    def __init__(self, database_id, parser_type=internal_var.PARSER_TYPE_PLAIN):
+    def __init__(
+            self,
+            database_id,
+            parser_type=NotionDump.PARSER_TYPE_PLAIN
+    ):
         self.database_id = database_id.replace('-', '')
         self.parser_type = parser_type
 

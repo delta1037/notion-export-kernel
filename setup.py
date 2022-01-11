@@ -22,14 +22,17 @@ if "bdist_wheel" in sys.argv:
 
 REQUIRES = ["notion-client>=0.8.0"]
 
+with open("README_En.md.md", encoding="utf-8") as handle:
+    readme_rst = handle.read()
 
 setup(
     name="notion-dump-kernel",
-    version="0.0.3",
+    version="0.0.4",
     author="delta1037",
     author_email="geniusrabbit@qq.com",
     url="https://github.com/delta1037/notion-dump-kernel",
     description="Freely available tools for dumping Notion page and database.",
+    long_description=readme_rst,
     project_urls={
         "Documentation": "https://github.com/delta1037/notion-dump-kernel/blob/main/README_En.md",
         "Source": "https://github.com/delta1037/notion-dump-kernel",

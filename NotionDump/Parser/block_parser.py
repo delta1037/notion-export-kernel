@@ -14,7 +14,7 @@ from NotionDump.utils import common_op, internal_var
 # Block内容解析
 class BlockParser:
     # 初始化
-    def __init__(self, block_id, query_handle: NotionQuery, parser_type=internal_var.PARSER_TYPE_MD):
+    def __init__(self, block_id, query_handle: NotionQuery, parser_type=NotionDump.PARSER_TYPE_MD):
         self.block_id = block_id.replace('-', '')
         self.query_handle = query_handle
         self.parser_type = parser_type

@@ -15,10 +15,18 @@ from NotionDump.utils import common_op, internal_var
 # 混合递归调用，主要是为Page和Database类型
 class MixParser:
     # 初始化
-    def __init__(self, mix_id, query_handle: NotionQuery, export_child_pages=False, parser_type=internal_var.PARSER_TYPE_MD):
+    def __init__(
+            self,
+            mix_id,
+            query_handle: NotionQuery,
+            export_child_pages=False,
+            parser_type=NotionDump.PARSER_TYPE_MD,
+            col_name_list=None,  # 数据库使用的字段
+    ):
         self.mix_id = mix_id
         self.query_handle = query_handle
         self.parser_type = parser_type
+
         # 是否导出子页面,也就是递归操作
         self.export_child_page = export_child_pages
 
@@ -81,11 +89,11 @@ class MixParser:
         if update_flag:
             self.__recursion_mix_parser()
 
-    def mix_parser(self, json_handle, json_type):
+    # col_name_list 是数据库的可选字段
+    def mix_parser(self, json_handle, json_type, col_name_list=None):
         # 解析到临时文件中
         if json_type == "database":
-            # 注意这里把数据库里所有的字段都捞出来了
-            tmp_filename = self.database_parser.database_to_csv(json_handle)
+            tmp_filename = self.database_parser.database_to_csv(json_handle, col_name_list=col_name_list)
         elif json_type == "block":
             tmp_filename = self.block_parser.block_to_md(json_handle)
         else:

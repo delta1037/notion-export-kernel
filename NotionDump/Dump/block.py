@@ -1,7 +1,7 @@
 # author: delta1037
 # Date: 2022/01/08
 # mail:geniusrabbit@qq.com
-
+import NotionDump
 from NotionDump.Dump.page import Page
 from NotionDump.Notion.Notion import NotionQuery
 from NotionDump.utils import internal_var
@@ -10,7 +10,7 @@ from NotionDump.utils import internal_var
 # Block内容解析
 class Block:
     # 初始化
-    def __init__(self, block_id, query_handle: NotionQuery, export_child_pages=False, parser_type=internal_var.PARSER_TYPE_MD):
+    def __init__(self, block_id, query_handle: NotionQuery, export_child_pages=False, parser_type=NotionDump.PARSER_TYPE_MD):
         self.block_id = block_id.replace('-', '')
         self.query_handle = query_handle
         # 是否导出子页面
