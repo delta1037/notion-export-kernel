@@ -28,6 +28,25 @@ notoin-dump
 └─Tests 	# 测试代码
 ```
 
+```mermaid
+graph TD
+    A[Dump] -->B(Database)
+    A[Dump] -->C(Page/Block)
+    B --> D[Mix Parser]
+    C --> D[Mix Parser]
+
+    D --> E[Database Parser]
+    D --> F[Block Parser]
+
+    E --> G[Base Parser]
+    F --> G[Base Parser]
+
+    B --> H[Query]
+    C --> H[Query]
+    
+    J[utils]
+```
+
 
 
 ## 三、使用方法
