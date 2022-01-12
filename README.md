@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # notion-dump-kernel
 
 [English_Version](https://github.com/delta1037/notion-dump/blob/main/README_En.md)
@@ -165,4 +166,3 @@ dump_output = dump_handle.dump_to_file()
 ### 项目测试
 
 [项目测试页面](https://delta1037.notion.site/Notion-dump-ed0a3b0f57b34712bc6bafcbdb413d50)
-
