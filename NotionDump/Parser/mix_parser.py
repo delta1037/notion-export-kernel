@@ -50,7 +50,8 @@ class MixParser:
         recursion_page = copy.deepcopy(internal_var.PAGE_DIC)
         for child_id in recursion_page:
             # 判断页面是子页面还是链接页面，链接页面不进行解析
-            if common_op.is_link_page(child_id):
+            if common_op.is_link_page(child_id, recursion_page[child_id]):
+                common_op.update_page_recursion(child_id, recursion=True)
                 continue
             # 判断页面是否已经操作过
             if common_op.is_page_recursion(child_id):

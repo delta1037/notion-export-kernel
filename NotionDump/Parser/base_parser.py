@@ -65,7 +65,8 @@ class BaseParser:
                         self.child_pages,
                         key_id=page_id + "_" + text_str,
                         link_id=page_id,
-                        page_type="database"
+                        page_type="database",
+                        page_name=text_str
                     )
                 else:
                     page_id = text_url[text_url.rfind("/") + 1:]
@@ -79,8 +80,8 @@ class BaseParser:
 
                 # 将页面保存，等待进一步递归操作
                 # 保存子页面信息
-                common_op.debug_log("child_page_parser add page id = " + page_id)
-                text_str = content_format.get_page_format_md(page_id)
+                common_op.debug_log("child_page_parser add page id = " + page_id + "_" + text_str)
+                text_str = content_format.get_page_format_md(page_id + "_" + text_str)
 
         if parser_type == NotionDump.PARSER_TYPE_MD:
             # 解析annotations部分，为text_str添加格式

@@ -56,8 +56,8 @@ def add_new_child_page(child_pages, key_id, page_id=None, link_id=None, page_nam
         page_id = key_id
     else:
         # 如果是链接，递归看一下对应的子页面在不在,如果在就先占个坑
+        debug_log("### link type key_id: " + key_id + " page_id:" + page_id)
         add_new_child_page(child_pages, key_id=page_id, page_type=page_type)
-    child_pages[key_id]["page_id"] = page_id
     if page_name is not None:
         child_pages[key_id]["page_name"] = page_name
     if link_id is not None:
@@ -90,8 +90,8 @@ def is_page(page_id):
 
 
 # 判断是否是链接页面
-def is_link_page(page_id):
-    return page_id.find("_") != -1
+def is_link_page(page_id, page_handle):
+    return (page_id.find("_") != -1) and page_handle["link_id"] != ""
 
 
 # 将文本保存为json文件
