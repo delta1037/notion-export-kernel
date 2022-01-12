@@ -2,7 +2,6 @@ import logging
 
 import NotionDump
 from NotionDump.Dump.dump import Dump
-from NotionDump.Dump.page import Page
 from NotionDump.Notion.Notion import NotionQuery
 from NotionDump.utils import common_op
 
@@ -41,7 +40,7 @@ if __name__ == '__main__':
         logging.exception("query handle init error")
         exit(-1)
     # 获取数据库原始数据测试
-    test_get_page_json_data(query_handle)
+    # test_get_page_json_data(query_handle)
 
     # 解析数据库内容测试
     test_page_parser(query_handle)

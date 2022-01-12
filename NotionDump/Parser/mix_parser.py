@@ -106,7 +106,7 @@ class MixParser:
 
         # 更新已经获取到的页面的状态(现有内容，再更新状态)
         common_op.update_child_page_stats(self.mix_id, dumped=True, main_page=True,
-                                          local_path=tmp_filename)
+                                          local_path=tmp_filename, page_type=json_type)
         common_op.update_page_recursion(self.mix_id, recursion=True)
         # 从页面里获取到所有的子页面,并将子页面添加到父id中
         if json_type == "database":

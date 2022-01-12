@@ -43,7 +43,7 @@ if __name__ == '__main__':
         logging.exception("query handle init error")
         exit(-1)
     # 获取数据库原始数据测试
-    test_get_db_json_data(query_handle)
+    # test_get_db_json_data(query_handle)
 
     # 解析数据库内容测试
     test_db_table_inline_parser(query_handle)

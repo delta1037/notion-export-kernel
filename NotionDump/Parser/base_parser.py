@@ -75,6 +75,7 @@ class BaseParser:
                         self.child_pages,
                         key_id=page_id + "_" + text_str,
                         link_id=page_id,
+                        page_type="page",
                         page_name=text_str
                     )
 
@@ -592,8 +593,10 @@ class BaseParser:
             page_type="database",
             page_name=block_handle["child_database"]["title"]
         )
-        common_op.debug_log("child_database_parser add page id = " + child_db_id)
+        common_op.debug_log("child_database_parser add page id = " + child_db_id + "name : " + block_handle["child_database"]["title"])
         common_op.debug_log(internal_var.PAGE_DIC)
+        common_op.debug_log("#############")
+        common_op.debug_log(self.child_pages)
 
         # 子数据库要返回一个链接占位符，供后续解析使用
         if parser_type == NotionDump.PARSER_TYPE_MD:

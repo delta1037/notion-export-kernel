@@ -11,7 +11,7 @@ from NotionDump.utils import internal_var
 
 
 # 更新子页面的状态
-def update_child_page_stats(child_key, dumped=False, main_page=False, local_path=None):
+def update_child_page_stats(child_key, dumped=False, main_page=False, local_path=None, page_type=None):
     if child_key not in internal_var.PAGE_DIC:
         # 如果现有的列表里没有这一条,则新加一条
         internal_var.PAGE_DIC[child_key] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
@@ -19,8 +19,26 @@ def update_child_page_stats(child_key, dumped=False, main_page=False, local_path
     internal_var.PAGE_DIC[child_key]["main_page"] = main_page
     if local_path is not None:
         internal_var.PAGE_DIC[child_key]["local_path"] = local_path
+    if page_type is not None:
+        if page_type == "block" or page_type == "page":
+            internal_var.PAGE_DIC[child_key]["type"] = "page"
+        elif page_type == "database":
+            internal_var.PAGE_DIC[child_key]["type"] = "database"
+        else:
+            debug_log("update_child_page_stats page type is unknown:" + str(page_type))
 
 
+# 关于软连接一共有如下情况
+# 同一个页面：add_new_child_page
+# 在同一个页面中，软连接先于实际链接出现
+#   软连接先占位，把实际链接加进去
+# 在同一个页面中，软连接在实际链接后出现
+# 不同的页面：update_child_pages
+# 在不同页面中，软连接先于实际链接出现
+#   实际链接替换，重新解析
+# 在不同页面中，软连接在实际链接后出现
+#   忽略软连接
+# 只出现软连接而没有出现实际链接，pass
 def update_child_pages(child_pages, parent_id):
     # 按理说这里一定会有父id，如果没有就是出大事了
     if parent_id not in internal_var.PAGE_DIC:
@@ -28,36 +46,45 @@ def update_child_pages(child_pages, parent_id):
         return
 
     for child_page_id in child_pages:
+        # 如果发现表里已经有了该页面，看是不是软链接创建的
+        if child_page_id in internal_var.PAGE_DIC:
+            # 如果页表里是软连接创建的，并且外面的不是软连接创建的
+            # 如果里面是硬链接，外面是软连接则会忽略
+            if internal_var.PAGE_DIC[child_page_id]["inter_soft_page"] \
+                    and not child_pages[child_page_id]["inter_soft_page"]:
+                # 将外面的合入到页面表，替换之后会重新解析，不用担心已经解析过的内容
+                # 这里相当于填充了一个未开始解析的内容，而调用这个函数之后
+                # __recursion_mix_parser会在循环遍历一次，将这个页面重新解析
+                internal_var.PAGE_DIC[child_page_id] = child_pages[child_page_id]
+                print("replace last created soft page, id=" + child_page_id)
+
         if child_page_id not in internal_var.PAGE_DIC:
             # 如果现有的列表里没有这一条,则新加一条
             internal_var.PAGE_DIC[child_page_id] = copy.deepcopy(child_pages[child_page_id])
-        # 将子页面添加到父页面的列表里
-        # print("before add")
-        # print(NotionDump.utils.internal_var.PAGE_DIC)
-        internal_var.PAGE_DIC[parent_id]["child_pages"].append(child_page_id)
-        # print("after add")
-        # print(NotionDump.utils.internal_var.PAGE_DIC)
+        # 如果该页面是占位的，则不加到父页面表里
+        if not child_pages[child_page_id]["inter_soft_page"]:
+            debug_log("parent id" + parent_id + " add child " + child_page_id)
+            internal_var.PAGE_DIC[parent_id]["child_pages"].append(child_page_id)
 
 
 # 添加一个新的子页
 # 链接的key格式是 id_链接名
 # 子页面的key格式是id
-def add_new_child_page(child_pages, key_id, page_id=None, link_id=None, page_name=None, page_type=None):
+def add_new_child_page(child_pages, key_id, link_id=None, page_name=None, page_type=None, inter_soft_page=False):
     # 判断id是否存在，存在就不添加了，防止覆盖
-    if key_id in child_pages:
-        logging.log(logging.WARN, "warn key_id:" + key_id + " exist, skip")
-        # 看一下页面名字有没有,如果名字是空的就是之前占坑的,把名字填进去
-        if child_pages[key_id]["page_name"] == "" and page_name is not None:
-            child_pages[key_id]["page_name"] = page_name
+    print("add new child key:" + key_id)
+    # id 存在并且不是软连接创建的，就不添加了（硬链接先于软连接）
+    if key_id in child_pages and not child_pages[key_id]["inter_soft_page"]:
+        print("warn key_id:" + key_id + " exist, skip")
         return
+    # 如果不存在或者上一个是软连接创建的，就重新赋值
     child_pages[key_id] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
-    if page_id is None:
-        # 说明此时是一个子页面
-        page_id = key_id
-    else:
-        # 如果是链接，递归看一下对应的子页面在不在,如果在就先占个坑
-        debug_log("### link type key_id: " + key_id + " page_id:" + page_id)
-        add_new_child_page(child_pages, key_id=page_id, page_type=page_type)
+    child_pages[key_id]["inter_soft_page"] = inter_soft_page
+    if link_id is not None:
+        # 如果是软链接，递归看一下对应的子页面在不在,如果不在就先占个坑
+        debug_log("###### link type key_id: " + key_id + " link_id:" + link_id)
+        # inter_soft_page 表明该项是软连接创建的
+        add_new_child_page(child_pages, key_id=link_id, page_type=page_type, inter_soft_page=True)
     if page_name is not None:
         child_pages[key_id]["page_name"] = page_name
     if link_id is not None:
@@ -71,14 +98,14 @@ def update_page_recursion(page_id, recursion=False):
     if page_id not in internal_var.PAGE_DIC:
         logging.log(logging.ERROR, "page id not exist!!!")
         return
-    internal_var.PAGE_DIC[page_id]["page_recursion"] = recursion
+    internal_var.PAGE_DIC[page_id]["inter_recursion"] = recursion
 
 
 def is_page_recursion(page_id):
     if page_id not in internal_var.PAGE_DIC:
         logging.log(logging.ERROR, "page id not exist!!!")
         return False
-    return not internal_var.PAGE_DIC[page_id]["page_recursion"]
+    return not internal_var.PAGE_DIC[page_id]["inter_recursion"]
 
 
 # page 返回True，DB返回False

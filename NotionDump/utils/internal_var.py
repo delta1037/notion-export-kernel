@@ -9,10 +9,12 @@ PAGE_DIC = {}
 CHILD_PAGE_TEMP = {
     "dumped": False,
     "main_page": False,
-    "page_recursion": False,
     "type": "page",
     "local_path": "",
     "page_name": "",
     "link_id": "",
-    "child_pages": []
+    "child_pages": [],
+    "inter_recursion": False,
+    "inter_soft_page": False
 }
+# inter_soft_link 表示该页是由链接创建的

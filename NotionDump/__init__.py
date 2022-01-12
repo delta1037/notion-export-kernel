@@ -1,3 +1,7 @@
+# author: delta1037
+# Date: 2022/01/08
+# mail:geniusrabbit@qq.com
+
 __author__ = "delta1037 <geniusrabbit@qq.com>"
 __version__ = "1.0"
 

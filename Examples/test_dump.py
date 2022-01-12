@@ -1,3 +1,7 @@
+# author: delta1037
+# Date: 2022/01/11
+# mail:geniusrabbit@qq.com
+
 import logging
 
 import NotionDump
