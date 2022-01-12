@@ -18,8 +18,8 @@ def get_page_format_plain(page_name):
 
 
 # 封装URL的格式
-def get_url_format(url_plain):
-    return "[link](" + url_plain + ")"
+def get_url_format(url_plain, name="link"):
+    return "[" + name + "](" + url_plain + ")"
 
 
 # 封装date的格式

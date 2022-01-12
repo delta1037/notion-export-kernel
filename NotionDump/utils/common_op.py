@@ -39,6 +39,33 @@ def update_child_pages(child_pages, parent_id):
         # print(NotionDump.utils.internal_var.PAGE_DIC)
 
 
+# 添加一个新的子页
+# 链接的key格式是 id_链接名
+# 子页面的key格式是id
+def add_new_child_page(child_pages, key_id, page_id=None, link_id=None, page_name=None, page_type=None):
+    # 判断id是否存在，存在就不添加了，防止覆盖
+    if key_id in child_pages:
+        logging.log(logging.WARN, "warn key_id:" + key_id + " exist, skip")
+        # 看一下页面名字有没有,如果名字是空的就是之前占坑的,把名字填进去
+        if child_pages[key_id]["page_name"] == "" and page_name is not None:
+            child_pages[key_id]["page_name"] = page_name
+        return
+    child_pages[key_id] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
+    if page_id is None:
+        # 说明此时是一个子页面
+        page_id = key_id
+    else:
+        # 如果是链接，递归看一下对应的子页面在不在,如果在就先占个坑
+        add_new_child_page(child_pages, key_id=page_id, page_type=page_type)
+    child_pages[key_id]["page_id"] = page_id
+    if page_name is not None:
+        child_pages[key_id]["page_name"] = page_name
+    if link_id is not None:
+        child_pages[key_id]["link_id"] = link_id
+    if page_type is not None:
+        child_pages[key_id]["type"] = page_type
+
+
 # 用此函数的前提是page表中已经存在
 def update_page_recursion(page_id, recursion=False):
     if page_id not in internal_var.PAGE_DIC:
@@ -60,6 +87,11 @@ def is_page(page_id):
         logging.log(logging.ERROR, "page id not exist!!!")
         return True
     return internal_var.PAGE_DIC[page_id]["type"] == "page"
+
+
+# 判断是否是链接页面
+def is_link_page(page_id):
+    return page_id.find("_") != -1
 
 
 # 将文本保存为json文件

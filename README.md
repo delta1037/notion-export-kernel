@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # notion-dump-kernel
 
 [English_Version](https://github.com/delta1037/notion-dump/blob/main/README_En.md)

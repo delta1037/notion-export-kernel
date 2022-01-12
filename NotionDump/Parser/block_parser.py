@@ -112,7 +112,7 @@ class BlockParser:
         elif block_type == "child_database":
             # Page child_database
             # Page中嵌套数据库的类型，只保存页面，不进行解析
-            self.base_parser.child_database_parser(block)
+            block_text = self.base_parser.child_database_parser(block, self.parser_type)
         else:
             logging.exception("unknown page block properties type:" + block_type)
         return block_text

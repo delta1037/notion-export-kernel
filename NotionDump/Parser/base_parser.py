@@ -49,6 +49,38 @@ class BaseParser:
         text_str = block_handle["plain_text"]
         if text_str is None:
             text_str = ""
+        # 如果有链接
+        text_url = block_handle["href"]
+        if text_url is not None and parser_type == NotionDump.PARSER_TYPE_MD:
+            # 文字有链接内容，分为网络链接和本地链接
+            if text_url.startswith("http"):
+                # 网络链接，直接一步到位
+                text_str = content_format.get_url_format(text_url, text_str)
+            else:
+                # Page类型，等待重定位
+                if text_url.find("=") != -1:
+                    page_id = text_url[text_url.rfind("/") + 1:text_url.rfind("?")]
+                    common_op.debug_log("### page id " + page_id + " is database")
+                    common_op.add_new_child_page(
+                        self.child_pages,
+                        key_id=page_id + "_" + text_str,
+                        link_id=page_id,
+                        page_type="database"
+                    )
+                else:
+                    page_id = text_url[text_url.rfind("/") + 1:]
+                    common_op.debug_log("### page id " + page_id + " is page")
+                    common_op.add_new_child_page(
+                        self.child_pages,
+                        key_id=page_id + "_" + text_str,
+                        link_id=page_id,
+                        page_name=text_str
+                    )
+
+                # 将页面保存，等待进一步递归操作
+                # 保存子页面信息
+                common_op.debug_log("child_page_parser add page id = " + page_id)
+                text_str = content_format.get_page_format_md(page_id)
 
         if parser_type == NotionDump.PARSER_TYPE_MD:
             # 解析annotations部分，为text_str添加格式
@@ -147,14 +179,14 @@ class BaseParser:
         elif mention_body["type"] == "page":
             page_id = self.__page_parser(mention_body)
             common_op.debug_log("__mention_parser add page id = " + page_id)
-            # TODO 这里先生成一个本地的page链接，后续再把相关的页面生成
-            self.child_pages[page_id] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
             # 获取页面的名字
             page_name = block_handle["plain_text"]
             if page_name is None:
+                # 提及到的其它页面因为没有别名，按照一个页面处理
+                common_op.add_new_child_page(self.child_pages, key_id=page_id)
                 page_name = page_id
             else:
-                self.child_pages[page_id]["page_name"] = page_name
+                common_op.add_new_child_page(self.child_pages, key_id=page_id, page_name=page_name)
 
             if parser_type == NotionDump.PARSER_TYPE_MD:
                 mention_plain = content_format.get_page_format_md(page_id)
@@ -189,13 +221,12 @@ class BaseParser:
             # 如果存在子Page就加入到待解析队列
             common_op.debug_log("title ret = " + title_ret)
             common_op.debug_log("title_parser add page id = " + page_id)
-            self.child_pages[page_id] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
-            self.child_pages[page_id]["type"] = "page"
-            self.child_pages[page_id]["page_name"] = title_ret
+            # 数据库里的都是子页面
+            common_op.add_new_child_page(self.child_pages, key_id=page_id, page_name=title_ret)
 
             # 如果有子页面就添加一个占位符，之后方便重定位
             if parser_type == NotionDump.PARSER_TYPE_MD:
-                title_ret += content_format.get_page_format_md(page_id)
+                title_ret = content_format.get_page_format_md(page_id)
         return title_ret
 
     # 数据库 rich_text
@@ -539,8 +570,7 @@ class BaseParser:
 
             # 保存子页面信息
             common_op.debug_log("child_page_parser add page id = " + page_id)
-            self.child_pages[page_id] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
-            self.child_pages[page_id]["page_name"] = page_body["title"]
+            common_op.add_new_child_page(self.child_pages, key_id=page_id, page_name=page_body["title"])
 
             if parser_type == NotionDump.PARSER_TYPE_MD:
                 return content_format.get_page_format_md(page_id)
@@ -548,15 +578,24 @@ class BaseParser:
                 return content_format.get_page_format_plain(page_body["title"])
 
     # Page child_database
-    def child_database_parser(self, block_handle):
+    def child_database_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         if block_handle["type"] != "child_database":
             logging.exception("child_database type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
             return ""
 
         # 子数据库保存在页面表中，不解析
         child_db_id = block_handle["id"].replace('-', '')
-        self.child_pages[child_db_id] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
-        self.child_pages[child_db_id]["type"] = "database"
-        self.child_pages[child_db_id]["page_name"] = block_handle["child_database"]["title"]
+        common_op.add_new_child_page(
+            self.child_pages,
+            key_id=child_db_id,
+            page_type="database",
+            page_name=block_handle["child_database"]["title"]
+        )
         common_op.debug_log("child_database_parser add page id = " + child_db_id)
         common_op.debug_log(internal_var.PAGE_DIC)
+
+        # 子数据库要返回一个链接占位符，供后续解析使用
+        if parser_type == NotionDump.PARSER_TYPE_MD:
+            return content_format.get_page_format_md(child_db_id)
+        else:
+            return content_format.get_page_format_plain(block_handle["child_database"]["title"])

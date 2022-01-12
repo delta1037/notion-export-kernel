@@ -13,5 +13,7 @@ CHILD_PAGE_TEMP = {
     "type": "page",
     "local_path": "",
     "page_name": "",
+    "page_id": "",
+    "link_id": "",
     "child_pages": []
 }
