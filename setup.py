@@ -22,8 +22,8 @@ if "bdist_wheel" in sys.argv:
 
 REQUIRES = ["notion-client>=0.8.0"]
 
-with open("README_En.md.md", encoding="utf-8") as handle:
-    readme_rst = handle.read()
+# with open("README_En.md", encoding="utf-8") as handle:
+#    readme_rst = handle.read()
 
 setup(
     name="notion-dump-kernel",
@@ -32,7 +32,7 @@ setup(
     author_email="geniusrabbit@qq.com",
     url="https://github.com/delta1037/notion-dump-kernel",
     description="Freely available tools for dumping Notion page and database.",
-    long_description=readme_rst,
+    # long_description=readme_rst,
     project_urls={
         "Documentation": "https://github.com/delta1037/notion-dump-kernel/blob/main/README_En.md",
         "Source": "https://github.com/delta1037/notion-dump-kernel",
@@ -52,3 +52,7 @@ setup(
     include_package_data=True,  # done via MANIFEST.in under setuptools
     install_requires=REQUIRES,
 )
+# 打包发布
+# 1、python setup.py sdist
+# 2、twine upload dist/*
+
