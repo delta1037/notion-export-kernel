@@ -48,6 +48,7 @@ graph TD
 ```
 
 
+![项目架构图]()
 
 ## 三、使用方法
 
@@ -56,10 +57,8 @@ graph TD
 **安装`notion-dump-kernel`**
 
 ```powershell
-# 打开终端，输入如下命令安装（测试通过版本为0.0.3）
+# 打开终端，输入如下命令安装（装最新版，之前bug有点多）
 pip install notion-dump-kernel
-# 或者
-pip install notion-dump-kernel==0.0.3
 ```
 
 **导入使用**
@@ -77,23 +76,29 @@ from NotionDump.Notion.Notion import NotionQuery
 ```python
 # 获取Notion查询句柄
 query_handle = NotionQuery(
-    token=TOKEN_TEST,                  # Token
-    client_handle=None,                # Notion官方API句柄，默认为空
-    async_api=False                    # 异步调用，默认为False
+    token=TOKEN_TEST,                  				# Token
+    client_handle=None,                				# Notion官方API句柄，默认为空
+    async_api=False                    				# 异步调用，默认为False
 )
 
 # 获取操作句柄
 handle = Dump(
-    dump_id=ID,                        # 需要导出的页面ID
-    query_handle=query,                # Notion查询句柄
-    export_child_pages=True, 		   # 是否递归导出子页面
-    dump_type=NotionDump.DUMP_TYPE_XXX # ID的类型，详细见后续说明
+    dump_id=ID,                        				# 需要导出的页面ID
+    query_handle=query,                				# Notion查询句柄
+    export_child_pages=True, 		   				# 是否递归导出子页面
+    page_parser_type=NotionDump.PARSER_TYPE_MD,  	# Page导出类型
+    db_parser_type=NotionDump.PARSER_TYPE_PLAIN,	# 数据库导出类型
+    dump_type=NotionDump.DUMP_TYPE_XXX 				# ID的类型，详细见后续说明
 )
 
 # dump类型 dump_type
-DUMP_TYPE_BLOCK						   # 块类型
-DUMP_TYPE_PAGE						   # 页面类型
-DUMP_TYPE_DB_TABLE                     # 数据库Table类型
+DUMP_TYPE_BLOCK						   				# 块类型
+DUMP_TYPE_PAGE						   				# 页面类型
+DUMP_TYPE_DB_TABLE                     				# 数据库Table类型
+
+# 导出类型
+PARSER_TYPE_MD										# Markdown格式
+PARSER_TYPE_PLAIN									# 纯文本格式
 
 # 其它
 # 变量自解释，不再赘述
@@ -111,33 +116,49 @@ dump_output = dump_handle.dump_to_file()
 # 其中dump_handle为上述的操作句柄（Dump(xxx)返回值）
 ```
 
+输出样例：
+
 ```json
-// 输出解释
-// 输出是一个字典，key值是id
 {
-    "id_1": {
-        "dumped": true,			          // id指向的资源是否成功下载
-        "main_page": true,		          // 页面是否是主页
-        "page_recursion": true,           // 内部使用变量，传出去的字典中改值均为true
-        "type": "page",                   // id的类型，database或者page
-        "local_path": "xxxx.md/xxxx.csv", // 导出的文件位置，供后续操作
-        "page_name": "",                  // 页面是否有名称（后续重定位使用）
+    "key_id_1": {
+        "dumped": true,
+        "main_page": true,
+        "type": "page",
+        "local_path": "xxxx",
+        "page_name": "",
+        "link_id": "",
         "child_pages": [
-            "child_id",                   // 包含的子页面或者子数据库
-            "child_id"
-        ]
+            "xxxxx",
+            "xxxxx"
+        ],
+        "inter_recursion": true,
+        "inter_soft_page": false
     },
-    "id_2": {
-        "dumped": true,			          
-        "main_page": true,		          
-        "page_recursion": true,           
-        "type": "page",                   
-        "local_path": "xxxx.md/xxxx.csv", 
-        "page_name": "",                  
-        "child_pages": []
+    "key_id_2": {
+        "dumped": false,
+        "main_page": false,
+        "type": "page",
+        "local_path": "",
+        "page_name": "",
+        "link_id": "xxxxx",
+        "child_pages": [],
+        "inter_recursion": true,
+        "inter_soft_page": false
     }
 }
 ```
+
+**输出解释**：
+
+-   id_1：键值，也是dump下来的页面需要重定位的标志
+-   dumped：id指向的资源是否成功下载
+-   main_page：页面是否是主页
+-   type：该id的类型，database或者page（链接的话是链接指向的页面的类型）
+-   local_path：导出的文件位置，供后续操作
+-   page_name：页面是否有名称（后续重定位使用）
+-   child_pages：包含的子页面或者子数据库
+-   inter_recursion：内部使用变量，无需关注
+-   inter_soft_page：内部使用变量，无需关注
 
 
 
@@ -160,8 +181,14 @@ dump_output = dump_handle.dump_to_file()
 
 
 
-## 附录
+## 六、附录
 
-### 项目测试
+### 6.1、项目测试
 
 [项目测试页面](https://delta1037.notion.site/Notion-dump-ed0a3b0f57b34712bc6bafcbdb413d50)
+
+### 6.2 Notion dump
+
+基于该项目做的一个下载下来的页面重新组合文件结构，并对其中的链接部分进行重定位
+
+[项目地址](https://github.com/delta1037/notion-dump)
