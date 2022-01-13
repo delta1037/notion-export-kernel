@@ -48,7 +48,7 @@ graph TD
 ```
 
 
-![项目架构图]()
+![项目架构图](https://github.com/delta1037/notion-dump-kernel/blob/main/img/structure.png)
 
 ## 三、使用方法
 
@@ -150,7 +150,7 @@ dump_output = dump_handle.dump_to_file()
 
 **输出解释**：
 
--   id_1：键值，也是dump下来的页面需要重定位的标志
+-   key_id_1：键值，也是dump下来的页面需要重定位的标志
 -   dumped：id指向的资源是否成功下载
 -   main_page：页面是否是主页
 -   type：该id的类型，database或者page（链接的话是链接指向的页面的类型）
@@ -192,3 +192,4 @@ dump_output = dump_handle.dump_to_file()
 基于该项目做的一个下载下来的页面重新组合文件结构，并对其中的链接部分进行重定位
 
 [项目地址](https://github.com/delta1037/notion-dump)
+

@@ -43,7 +43,7 @@ graph TD
     J[utils]
 ```
 
-
+![项目架构图](https://github.com/delta1037/notion-dump-kernel/blob/main/img/structure.png)
 
 ## Usage
 
@@ -52,10 +52,8 @@ graph TD
 **install `notion-dump-kernel`**
 
 ```powershell
-# open terminal, type the cmd (stable version is 0.0.3)
+# open terminal, type the cmd (install the latest version)
 pip install notion-dump-kernel
-# or
-pip install notion-dump-kernel==0.0.3
 ```
 
 **import**
@@ -83,6 +81,8 @@ handle = Dump(
     dump_id=ID,                        # the ID which need to export (block, page or database)
     query_handle=query,                # Notion query handle (NOT the offical API handle)
     export_child_pages=True, 		   # Recursion export child page 
+    page_parser_type=NotionDump.PARSER_TYPE_MD,  	# Page export type
+    db_parser_type=NotionDump.PARSER_TYPE_PLAIN,	# Database export type
     dump_type=NotionDump.DUMP_TYPE_XXX # ID type, see the descriptions below
 )
 
@@ -90,6 +90,10 @@ handle = Dump(
 DUMP_TYPE_BLOCK						   # Block type
 DUMP_TYPE_PAGE						   # Page type
 DUMP_TYPE_DB_TABLE                     # Database table type
+
+# Export type
+PARSER_TYPE_MD										# Markdown
+PARSER_TYPE_PLAIN									# plain text
 
 # Other
 # the varible itself shows all
@@ -107,35 +111,49 @@ dump_output = dump_handle.dump_to_file()
 # dump_handle is the return value of Dump(xxx)
 ```
 
+输出样例：
+
 ```json
-// output explain
-// output is a dictionary variable, key is id (block id/page id/database id)
 {
-    "id_1": {
-        "dumped": true,			          // download status of the resource specifid by id
-        "main_page": true,		          // whether the page is the page specifid by input id (root)
-        "page_recursion": true,           // internal variable(NOT use)
-        "type": "page",                   // root id type, database or page (page type contain page and block)
-        "local_path": "xxxx.md/xxxx.csv", // the location of export file, for subsequent operations
-        "page_name": "",                  // page name (for subsequent relocation of page url)
+    "key_id_1": {
+        "dumped": true,
+        "main_page": true,
+        "type": "page",
+        "local_path": "xxxx",
+        "page_name": "",
+        "link_id": "",
         "child_pages": [
-            "child_id",                   // subpage or database id this key_id contain
-            "child_id"
-        ]
+            "xxxxx",
+            "xxxxx"
+        ],
+        "inter_recursion": true,
+        "inter_soft_page": false
     },
-    "id_2": {
-        "dumped": true,			          
-        "main_page": true,		          
-        "page_recursion": true,           
-        "type": "page",                   
-        "local_path": "xxxx.md/xxxx.csv", 
-        "page_name": "",                  
-        "child_pages": []
+    "key_id_2": {
+        "dumped": false,
+        "main_page": false,
+        "type": "page",
+        "local_path": "",
+        "page_name": "",
+        "link_id": "xxxxx",
+        "child_pages": [],
+        "inter_recursion": true,
+        "inter_soft_page": false
     }
 }
 ```
 
+**output explain**：
 
+-   id_1：key is id (block id/page id/database id) and it is the combination of link name and id in link page，the id is the tag to relocate link in page
+-   dumped：download status of the resource specifid by id
+-   main_page：whether the page is the page specifid by input id (root)
+-   type：id type, database or page (page type contain page and block)（if id_1 is a link the type is the page type that the link linked）
+-   local_path：the location of export file, for subsequent operations
+-   page_name：page name (for subsequent relocation of page url)
+-   child_pages：subpage or database id this key_id contain
+-   inter_recursion：internal variable(NOT use)
+-   inter_soft_page：internal variable(NOT use)
 
 ## TODO
 
@@ -145,7 +163,7 @@ Plan: All page save in one table, and every csv file save as a table
 
 *My SQL skills is very weak*
 
-
+*If you can't understand my README, my English is also terrible (come from Google translate)*
 
 ## Attention
 
@@ -154,11 +172,15 @@ Plan: All page save in one table, and every csv file save as a table
 - [ ] Comment can't export
 - [ ] the csv file lost it's format shows in notion client
 
-
-
 ## Others
 
-### Notion Test Page
+### 6.1、Notion Test Page
 
 [Notion Test Page](https://delta1037.notion.site/Notion-dump-ed0a3b0f57b34712bc6bafcbdb413d50)
+
+### 6.2 Notion dump
+
+which base on notion-dump-kernel, it is used to rebuild the structure of dumped files and relocate the link in pages
+
+[Project link](https://github.com/delta1037/notion-dump)
 
