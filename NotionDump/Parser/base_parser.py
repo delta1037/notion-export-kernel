@@ -2,7 +2,6 @@
 # Date: 2022/01/08
 # mail:geniusrabbit@qq.com
 import copy
-import logging
 
 import NotionDump
 from NotionDump.utils import content_format, common_op
@@ -43,8 +42,8 @@ class BaseParser:
 
     def __text_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         if block_handle["type"] != "text":
-            logging.exception("text type error! id=" + self.base_id)
-            print(block_handle)
+            common_op.debug_log("text type error! id=" + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log(block_handle, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         text_str = block_handle["plain_text"]
         if text_str is None:
@@ -99,8 +98,7 @@ class BaseParser:
         elif block_handle["type"] == "mention":
             paragraph_ret = self.__mention_parser(block_handle, parser_type)
         else:
-            logging.exception("text type error! parent_id= " + self.base_id)
-        # print(block_handle, paragraph_ret)
+            common_op.debug_log("text type error! parent_id= " + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
         return paragraph_ret
 
     def __text_list_parser(self, text_list, parser_type=NotionDump.PARSER_TYPE_PLAIN):
@@ -113,7 +111,7 @@ class BaseParser:
     # TODO : people只获取了名字和ID，后续可以做深度解析用户相关内容
     def __people_parser(self, block_handle):
         if block_handle["object"] != "user":
-            logging.exception("people type error! id=" + self.base_id)
+            common_op.debug_log("people type error! id=" + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         # 优先获取名字
         if block_handle["name"] is not None:
@@ -123,14 +121,14 @@ class BaseParser:
 
     def __user_parser(self, block_handle):
         if block_handle["type"] != "user":
-            logging.exception("user type error! id=" + self.base_id)
+            common_op.debug_log("user type error! id=" + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         user_body = block_handle["user"]
         return self.__people_parser(user_body)
 
     def __file_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         if block_handle["type"] != "file":
-            logging.exception("file type error! id=" + self.base_id)
+            common_op.debug_log("file type error! id=" + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         filename = block_handle["name"]
         file_url = block_handle["file"]["url"]
@@ -144,7 +142,7 @@ class BaseParser:
     # "$ equation_inline $"
     def __equation_inline_parser(self, block_handle):
         if block_handle["type"] != "equation":
-            logging.exception("equation inline type error! id=" + self.base_id)
+            common_op.debug_log("equation inline type error! id=" + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         return content_format.get_equation_inline(
             self.__annotations_parser(block_handle["annotations"], block_handle["plain_text"])
@@ -153,14 +151,14 @@ class BaseParser:
     # "$$ equation_block $$"
     def __equation_block_parser(self, block_handle):
         if block_handle["expression"] is None:
-            logging.exception("equation block no expression! id=" + self.base_id)
+            common_op.debug_log("equation block no expression! id=" + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         return content_format.get_equation_block(block_handle["expression"])
 
     # Attention!!! 关于链接到其它的Page可能需要递归处理
     def __page_parser(self, block_handle):
         if block_handle["type"] != "page":
-            logging.exception("page type error! parent_id= " + self.base_id)
+            common_op.debug_log("page type error! parent_id= " + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
 
         page_body = block_handle["page"]
@@ -169,7 +167,7 @@ class BaseParser:
     # 提及到其它页面，日期，用户
     def __mention_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         if block_handle["type"] != "mention":
-            logging.exception("mention type error! parent_id= " + self.base_id)
+            common_op.debug_log("mention type error! parent_id= " + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
 
         mention_body = block_handle["mention"]
@@ -195,7 +193,7 @@ class BaseParser:
             else:
                 mention_plain = page_name
         else:
-            logging.exception("unknown mention type " + mention_body["type"])
+            common_op.debug_log("unknown mention type " + mention_body["type"], level=NotionDump.DUMP_MODE_DEFAULT)
         if parser_type == NotionDump.PARSER_TYPE_MD:
             # 解析annotations部分，为mention_plain添加格式
             return self.__annotations_parser(block_handle["annotations"],
@@ -205,7 +203,7 @@ class BaseParser:
 
     def __table_row_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         if block_handle["type"] != "table_row":
-            logging.exception("table_row type error! parent_id= " + self.base_id)
+            common_op.debug_log("table_row type error! parent_id= " + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         table_col_cells = block_handle["table_row"]["cells"]
         table_row = []
@@ -216,7 +214,8 @@ class BaseParser:
     # 数据库 title
     def title_parser(self, block_handle, page_id, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         if block_handle["type"] != "title":
-            logging.exception("title type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("title type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         title_ret = self.__text_list_parser(block_handle["title"], parser_type)
         if title_ret != "":
@@ -234,14 +233,16 @@ class BaseParser:
     # 数据库 rich_text
     def rich_text_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         if block_handle["type"] != "rich_text":
-            logging.exception("rich_text type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("rich_text type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         return self.__text_list_parser(block_handle["rich_text"], parser_type)
 
     # 数据库 multi_select
     def multi_select_parser(self, block_handle):
         if block_handle["type"] != "multi_select":
-            logging.exception("multi_select type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("multi_select type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         multi_select_list = block_handle["multi_select"]
         ret_str = ""
@@ -256,7 +257,8 @@ class BaseParser:
     # 数据库 select
     def select_parser(self, block_handle):
         if block_handle["type"] != "select":
-            logging.exception("select type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("select type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         select = block_handle["select"]
         ret_str = ""
@@ -268,7 +270,8 @@ class BaseParser:
     # 数据库 url
     def url_parser(self, block_handle):
         if block_handle["type"] != "url":
-            logging.exception("url type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("url type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         url = block_handle["url"]
         if url is None:
@@ -278,10 +281,10 @@ class BaseParser:
     # 数据库 email
     def email_parser(self, block_handle):
         if block_handle["type"] != "email":
-            logging.exception("email type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("email type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         email = block_handle["email"]
-        # print(email)
         ret_str = ""
         if email is not None:
             ret_str = email
@@ -290,10 +293,10 @@ class BaseParser:
     # 数据库 checkbox
     def checkbox_parser(self, block_handle):
         if block_handle["type"] != "checkbox":
-            logging.exception("checkbox type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("checkbox type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         checkbox = block_handle["checkbox"]
-        # print(email)
         if checkbox is True:
             ret_str = "true"
         else:
@@ -303,10 +306,10 @@ class BaseParser:
     # 数据库 phone_number
     def phone_number_parser(self, block_handle):
         if block_handle["type"] != "phone_number":
-            logging.exception("phone_number type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("phone_number type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         phone_number = block_handle["phone_number"]
-        # print(email)
         ret_str = ""
         if phone_number is not None:
             ret_str = phone_number
@@ -315,7 +318,8 @@ class BaseParser:
     # 数据库 date
     def date_parser(self, block_handle):
         if block_handle["type"] != "date":
-            logging.exception("date type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("date type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         date = block_handle["date"]
         if date is None:
@@ -325,7 +329,8 @@ class BaseParser:
     # 数据库 people
     def people_parser(self, block_handle):
         if block_handle["type"] != "people":
-            logging.exception("people type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("people type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         people_list = block_handle["people"]
         ret_str = ""
@@ -340,7 +345,8 @@ class BaseParser:
     # 数据库 number
     def number_parser(self, block_handle):
         if block_handle["type"] != "number":
-            logging.exception("number type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("number type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         number = block_handle["number"]
         ret_str = ""
@@ -352,7 +358,8 @@ class BaseParser:
     # 数据库 files
     def files_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         if block_handle["type"] != "files":
-            logging.exception("files type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("files type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         files_list = block_handle["files"]
         ret_str = ""
@@ -374,7 +381,8 @@ class BaseParser:
     def paragraph_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         paragraph_ret = ""
         if block_handle["type"] != "paragraph":
-            logging.exception("paragraph type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("paragraph type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return paragraph_ret
         return self.__text_list_parser(block_handle["paragraph"]["text"], parser_type)
 
@@ -382,7 +390,8 @@ class BaseParser:
     def heading_1_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         heading_1_ret = ""
         if block_handle["type"] != "heading_1":
-            logging.exception("heading_1 type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("heading_1 type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return heading_1_ret
         heading_1_ret = self.__text_list_parser(block_handle["heading_1"]["text"], parser_type)
         if parser_type == NotionDump.PARSER_TYPE_MD:
@@ -394,7 +403,8 @@ class BaseParser:
     def heading_2_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         heading_2_ret = ""
         if block_handle["type"] != "heading_2":
-            logging.exception("heading_2 type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("heading_2 type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return heading_2_ret
         heading_2_ret = self.__text_list_parser(block_handle["heading_2"]["text"], parser_type)
 
@@ -407,7 +417,8 @@ class BaseParser:
     def heading_3_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         heading_3_ret = ""
         if block_handle["type"] != "heading_3":
-            logging.exception("heading_3 type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("heading_3 type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return heading_3_ret
         heading_3_ret = self.__text_list_parser(block_handle["heading_3"]["text"], parser_type)
 
@@ -420,7 +431,8 @@ class BaseParser:
     def to_do_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         to_do_ret = ""
         if block_handle["type"] != "to_do":
-            logging.exception("to_do type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("to_do type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return to_do_ret
         to_do_ret = self.__text_list_parser(block_handle["to_do"]["text"], parser_type)
 
@@ -436,8 +448,9 @@ class BaseParser:
     def bulleted_list_item_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         bulleted_list_item_ret = ""
         if block_handle["type"] != "bulleted_list_item":
-            logging.exception(
-                "bulleted_list_item type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log(
+                "bulleted_list_item type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                level=NotionDump.DUMP_MODE_DEFAULT)
             return bulleted_list_item_ret
         bulleted_list_item_ret = self.__text_list_parser(block_handle["bulleted_list_item"]["text"], parser_type)
 
@@ -450,8 +463,9 @@ class BaseParser:
     def numbered_list_item_parser(self, block_handle, list_index, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         numbered_list_item_ret = ""
         if block_handle["type"] != "numbered_list_item":
-            logging.exception(
-                "numbered_list_item type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log(
+                "numbered_list_item type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                level=NotionDump.DUMP_MODE_DEFAULT)
             return numbered_list_item_ret
         numbered_list_item_ret = self.__text_list_parser(block_handle["numbered_list_item"]["text"], parser_type)
 
@@ -464,7 +478,8 @@ class BaseParser:
     def toggle_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         toggle_ret = ""
         if block_handle["type"] != "toggle":
-            logging.exception("toggle type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("toggle type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return toggle_ret
         toggle_ret = self.__text_list_parser(block_handle["toggle"]["text"], parser_type)
 
@@ -477,7 +492,8 @@ class BaseParser:
     def divider_parser(self, block_handle):
         divider_ret = ""
         if block_handle["type"] != "divider":
-            logging.exception("divider type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("divider type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return divider_ret
         divider_ret = NotionDump.MD_DIVIDER
         return divider_ret
@@ -486,7 +502,8 @@ class BaseParser:
     def callout_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         callout_ret = ""
         if block_handle["type"] != "callout":
-            logging.exception("callout type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("callout type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return callout_ret
         callout_ret = self.__text_list_parser(block_handle["callout"]["text"], parser_type)
 
@@ -500,7 +517,8 @@ class BaseParser:
     def code_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         code_ret = ""
         if block_handle["type"] != "code":
-            logging.exception("code type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("code type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return code_ret
         code_ret = self.__text_list_parser(block_handle["code"]["text"], parser_type)
 
@@ -518,7 +536,8 @@ class BaseParser:
     def quote_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         quote_ret = ""
         if block_handle["type"] != "quote":
-            logging.exception("quote type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("quote type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return quote_ret
         quote_ret = self.__text_list_parser(block_handle["quote"]["text"], parser_type)
 
@@ -532,16 +551,17 @@ class BaseParser:
     def equation_parser(self, block_handle):
         equation_ret = ""
         if block_handle["type"] != "equation":
-            logging.exception(" type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log(" type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return equation_ret
         return self.__equation_block_parser(block_handle["equation"])
 
     # Page table_row
     def table_row_parser(self, block_handle, first_row=False, parser_type=NotionDump.PARSER_TYPE_PLAIN):
-        # print("table_row:", block_handle)
         table_row_ret = ""
         if block_handle["type"] != "table_row":
-            logging.exception("table_row type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("table_row type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return table_row_ret
 
         table_row_list = self.__table_row_parser(block_handle, parser_type)
@@ -558,7 +578,8 @@ class BaseParser:
     def child_page_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         child_page_ret = ""
         if block_handle["type"] != "child_page":
-            logging.exception("child_page type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("child_page type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return child_page_ret
 
         page_body = block_handle["child_page"]
@@ -582,7 +603,8 @@ class BaseParser:
     # Page child_database
     def child_database_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         if block_handle["type"] != "child_database":
-            logging.exception("child_database type error! parent_id= " + self.base_id + " id= " + block_handle["id"])
+            common_op.debug_log("child_database type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
 
         # 子数据库保存在页面表中，不解析
@@ -593,7 +615,8 @@ class BaseParser:
             page_type="database",
             page_name=block_handle["child_database"]["title"]
         )
-        common_op.debug_log("child_database_parser add page id = " + child_db_id + "name : " + block_handle["child_database"]["title"])
+        common_op.debug_log(
+            "child_database_parser add page id = " + child_db_id + "name : " + block_handle["child_database"]["title"])
         common_op.debug_log(internal_var.PAGE_DIC)
         common_op.debug_log("#############")
         common_op.debug_log(self.child_pages)

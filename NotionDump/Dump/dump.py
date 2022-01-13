@@ -2,14 +2,13 @@
 # Date: 2022/01/08
 # mail:geniusrabbit@qq.com
 import copy
-import logging
 
 import NotionDump
 from NotionDump.Dump.block import Block
 from NotionDump.Dump.database import Database
 from NotionDump.Dump.page import Page
 from NotionDump.Notion.Notion import NotionQuery
-from NotionDump.utils import internal_var
+from NotionDump.utils import internal_var, common_op
 
 
 class Dump:
@@ -48,7 +47,7 @@ class Dump:
                 export_child_pages=self.export_child_page
             )
         else:
-            logging.exception("unknown dump type:" + str(self.dump_type))
+            common_op.debug_log("unknown dump type:" + str(self.dump_type), level=NotionDump.DUMP_MODE_DEFAULT)
 
     # show_child_page
     @staticmethod
@@ -58,7 +57,7 @@ class Dump:
     # 获取到所有的BLOCK数据
     def dump_to_file(self, file_name=None):
         if self.handle is None:
-            logging.exception("dump init fail")
+            common_op.debug_log("dump init fail", level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         # 递归时第一个block单独作为一个main page存放
         self.handle.dump_to_file(file_name=file_name)
@@ -69,7 +68,7 @@ class Dump:
 
     def dump_to_db(self):
         if self.handle is None:
-            logging.exception("dump init fail")
+            common_op.debug_log("dump init fail", level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         # 将内容导出到数据库
         self.handle.dump_to_db()
@@ -81,7 +80,7 @@ class Dump:
     # 源文件，直接输出成json; 辅助测试使用
     def dump_to_json(self, json_name=None):
         if self.handle is None:
-            logging.exception("dump init fail")
+            common_op.debug_log("dump init fail", level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
 
         self.handle.dump_to_json(json_name=json_name)

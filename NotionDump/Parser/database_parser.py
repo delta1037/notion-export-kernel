@@ -4,11 +4,10 @@
 
 import csv
 import os
-import logging
 
 import NotionDump
 from NotionDump.Parser.base_parser import BaseParser
-from NotionDump.utils import internal_var
+from NotionDump.utils import common_op
 
 
 class DatabaseParser:
@@ -37,7 +36,7 @@ class DatabaseParser:
             else:
                 col_name_list.append(item)
         if title_name == "":
-            logging.exception("col name no title error! id=" + self.database_id)
+            common_op.debug_log("col name no title error! id=" + self.database_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         col_name_list.append(title_name)  # 把title_name放在最后一个，逆序之后就是第一个
         # 根据现有的数据库看来这里需要逆序一下才和实际的数据库一致
@@ -76,8 +75,7 @@ class DatabaseParser:
         for page in page_list:
             # 每一个page都有page id
             page_id = page["id"].replace('-', '')
-            if NotionDump.DUMP_DEBUG:
-                print("# database page id", page_id)
+            common_op.debug_log("database page id" + page_id)
             page_iter = []
             for item in col_name_list:
                 # 解析每一个方格的内容
@@ -106,13 +104,15 @@ class DatabaseParser:
                 elif page["properties"][item]["type"] == "files":
                     page_iter.append(self.base_parser.files_parser(page["properties"][item], parser_type=self.parser_type))
                 else:
-                    logging.exception("unknown properties type:" + page["properties"][item]["type"])
+                    common_op.debug_log("unknown properties type:" + page["properties"][item]["type"],
+                                        level=NotionDump.DUMP_MODE_DEFAULT)
 
             # 将内容填充到CSV中
             csv_writer.writerow(page_iter)
-            # print("write success")
-
+            common_op.debug_log("database page " + page_id + " write csv success")
         file.flush()
         file.close()
+
+        common_op.debug_log("write file " + tmp_csv_filename, level=NotionDump.DUMP_MODE_DEFAULT)
         # 将临时文件地址转出去，由外面进行进一步的操作
         return tmp_csv_filename

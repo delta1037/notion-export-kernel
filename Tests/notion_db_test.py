@@ -1,7 +1,6 @@
 import logging
 
 import NotionDump
-from NotionDump.Dump.database import Database
 from NotionDump.Dump.dump import Dump
 from NotionDump.Notion.Notion import NotionQuery
 from NotionDump.utils import common_op

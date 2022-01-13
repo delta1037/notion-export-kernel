@@ -11,8 +11,11 @@ TMP_DIR = "./.tmp/"
 # Markdown的分割条语法
 MD_DIVIDER = "------"
 
-# 开启调试
-DUMP_DEBUG = False
+# 日志输出模式
+DUMP_MODE_DEBUG = 0
+DUMP_MODE_DEFAULT = 1
+DUMP_MODE_SILENT = 2
+DUMP_MODE = DUMP_MODE_DEFAULT
 
 DUMP_TYPE_BLOCK = 1
 DUMP_TYPE_PAGE = 2

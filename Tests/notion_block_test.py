@@ -1,7 +1,6 @@
 import logging
 
 import NotionDump
-from NotionDump.Dump.block import Block
 from NotionDump.Dump.dump import Dump
 from NotionDump.Notion.Notion import NotionQuery
 

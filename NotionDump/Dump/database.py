@@ -1,9 +1,8 @@
 # author: delta1037
 # Date: 2022/01/08
 # mail:geniusrabbit@qq.com
-import copy
+
 import os
-import logging
 import shutil
 
 import NotionDump
@@ -46,16 +45,18 @@ class Database:
             db_q_filter=db_q_filter,
             db_q_sorts=db_q_sorts)
         if db_json is None:
+            common_op.debug_log("query database get nothing, id=" + self.database_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
 
         # 解析到临时文件中
         tmp_csv_filename = self.mix_parser.mix_parser(json_handle=db_json, json_type="database", col_name_list=col_name_list)
         if tmp_csv_filename is None:
-            logging.exception("page parser fail, id=" + self.database_id)
+            common_op.debug_log("page parser fail, id=" + self.database_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
 
         if file_name is not None:
             shutil.copyfile(tmp_csv_filename, file_name)
+            common_op.debug_log("copy " + tmp_csv_filename + " to " + file_name, level=NotionDump.DUMP_MODE_DEFAULT)
             return file_name
 
         return tmp_csv_filename

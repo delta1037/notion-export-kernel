@@ -2,13 +2,11 @@
 # Date: 2022/01/10
 # mail:geniusrabbit@qq.com
 import os
-import logging
+from notion_client import Client, AsyncClient
+from notion_client import APIErrorCode, APIResponseError
 
 import NotionDump
 from NotionDump.utils import common_op
-
-from notion_client import Client, AsyncClient
-from notion_client import APIErrorCode, APIResponseError
 
 
 class NotionQuery:
@@ -25,7 +23,7 @@ class NotionQuery:
             self.client = client_handle
 
         if self.client is None:
-            logging.exception("notion query init fail")
+            common_op.debug_log("notion query init fail", level=NotionDump.DUMP_MODE_DEFAULT)
 
         # 创建临时文件夹
         self.tmp_dir = NotionDump.TMP_DIR
@@ -51,23 +49,20 @@ class NotionQuery:
                     **query_post
                 )
                 next_cur = db_query_ret["next_cursor"]
-            if NotionDump.DUMP_DEBUG:
+            if NotionDump.DUMP_MODE_DEBUG:
                 self.__save_to_json(query_ret, block_id, prefix="retrieve_")
             return query_ret
         except APIResponseError as error:
-            if NotionDump.DUMP_DEBUG:
-                if error.code == APIErrorCode.ObjectNotFound:
-                    logging.exception("Block " + block_id + " Retrieve child is invalid")
-                else:
-                    # Other error handling code
-                    logging.exception(error)
+            if error.code == APIErrorCode.ObjectNotFound:
+                common_op.debug_log("Block " + block_id + " Retrieve child is invalid",
+                                    level=NotionDump.DUMP_MODE_DEFAULT)
             else:
-                logging.exception("Block " + block_id + " Retrieve child is invalid")
+                # Other error handling code
+                common_op.debug_log(error)
+                common_op.debug_log("Block " + block_id + " response error", level=NotionDump.DUMP_MODE_DEFAULT)
         except Exception as e:
-            if NotionDump.DUMP_DEBUG:
-                logging.exception(e)
-            else:
-                logging.exception("Block " + block_id + " Not found or no authority")
+            common_op.debug_log(e)
+            common_op.debug_log("Block " + block_id + " Not found or no authority", level=NotionDump.DUMP_MODE_DEFAULT)
         return None
 
     # 获取到所有的数据库数据(JSon格式)
@@ -92,69 +87,63 @@ class NotionQuery:
                 )
                 # TODO 这里还没有将内容搞出来
                 next_cur = db_query_ret["next_cursor"]
-            if NotionDump.DUMP_DEBUG:
+            if NotionDump.DUMP_MODE_DEBUG:
                 self.__save_to_json(query_ret, database_id, prefix="query_")
             return query_ret
         except APIResponseError as error:
-            if NotionDump.DUMP_DEBUG:
-                if error.code == APIErrorCode.ObjectNotFound:
-                    logging.exception("Database Query is invalid, id=" + database_id)
-                else:
-                    # Other error handling code
-                    logging.exception(error)
+            if error.code == APIErrorCode.ObjectNotFound:
+                common_op.debug_log("Database Query is invalid, id=" + database_id,
+                                    level=NotionDump.DUMP_MODE_DEFAULT)
             else:
-                logging.exception("Database Query is invalid, id=" + database_id)
+                # Other error handling code
+                common_op.debug_log(error)
+                common_op.debug_log("Database Query is invalid, id=" + database_id, level=NotionDump.DUMP_MODE_DEFAULT)
         except Exception as e:
-            if NotionDump.DUMP_DEBUG:
-                logging.exception(e)
-            else:
-                logging.exception("Database Query Not found or no authority, id=" + database_id)
+            common_op.debug_log(e)
+            common_op.debug_log("Database Query Not found or no authority, id=" + database_id, level=NotionDump.DUMP_MODE_DEFAULT)
         return None
 
     # 获取数据库信息
     def retrieve_database(self, database_id):
         try:
             retrieve_ret = self.client.databases.retrieve(database_id=database_id)
-            if NotionDump.DUMP_DEBUG:
+            if NotionDump.DUMP_MODE_DEBUG:
                 self.__save_to_json(retrieve_ret, database_id, prefix="retrieve_")
             return retrieve_ret
         except APIResponseError as error:
-            if NotionDump.DUMP_DEBUG:
-                if error.code == APIErrorCode.ObjectNotFound:
-                    logging.exception("Database Retrieve is invalid, id=" + database_id)
-                else:
-                    # Other error handling code
-                    logging.exception(error)
+            if error.code == APIErrorCode.ObjectNotFound:
+                common_op.debug_log("Database retrieve is invalid, id=" + database_id,
+                                    level=NotionDump.DUMP_MODE_DEFAULT)
             else:
-                logging.exception("Database Retrieve is invalid, id=" + database_id)
+                # Other error handling code
+                common_op.debug_log(error)
+                common_op.debug_log("Database retrieve is invalid, id=" + database_id, level=NotionDump.DUMP_MODE_DEFAULT)
         except Exception as e:
-            if NotionDump.DUMP_DEBUG:
-                logging.exception(e)
-            else:
-                logging.exception("Database Retrieve Not found or no authority, id=" + database_id)
+            common_op.debug_log(e)
+            common_op.debug_log("Database retrieve Not found or no authority, id=" + database_id,
+                                level=NotionDump.DUMP_MODE_DEFAULT)
         return None
 
     # 获取Page的信息
     def retrieve_page(self, page_id):
         try:
             retrieve_ret = self.client.pages.retrieve(page_id=page_id)
-            if NotionDump.DUMP_DEBUG:
+            if NotionDump.DUMP_MODE_DEBUG:
                 self.__save_to_json(retrieve_ret, page_id, prefix="retrieve_")
             return retrieve_ret
         except APIResponseError as error:
-            if NotionDump.DUMP_DEBUG:
-                if error.code == APIErrorCode.ObjectNotFound:
-                    logging.exception("Page Retrieve is invalid, id=" + page_id)
-                else:
-                    # Other error handling code
-                    logging.exception(error)
+            if error.code == APIErrorCode.ObjectNotFound:
+                common_op.debug_log("Page retrieve is invalid, id=" + page_id,
+                                    level=NotionDump.DUMP_MODE_DEFAULT)
             else:
-                logging.exception("Page Retrieve is invalid, id=" + page_id)
+                # Other error handling code
+                common_op.debug_log(error)
+                common_op.debug_log("Page retrieve is invalid, id=" + page_id,
+                                    level=NotionDump.DUMP_MODE_DEFAULT)
         except Exception as e:
-            if NotionDump.DUMP_DEBUG:
-                logging.exception(e)
-            else:
-                logging.exception("Page Retrieve Not found or no authority, id=" + page_id)
+            common_op.debug_log(e)
+            common_op.debug_log("Page retrieve Not found or no authority, id=" + page_id,
+                                level=NotionDump.DUMP_MODE_DEFAULT)
         return None
 
     # 源文件，直接输出成json; 辅助测试使用

@@ -1,15 +1,11 @@
 # author: delta1037
 # Date: 2022/01/08
 # mail:geniusrabbit@qq.com
-import copy
 import os
-import logging
 import shutil
 
 import NotionDump
 from NotionDump.Notion.Notion import NotionQuery
-from NotionDump.Parser.block_parser import BlockParser
-from NotionDump.Parser.database_parser import DatabaseParser
 from NotionDump.Parser.mix_parser import MixParser
 from NotionDump.utils import common_op
 from NotionDump.utils import internal_var
@@ -46,15 +42,18 @@ class Page:
     def dump_to_file(self, file_name=None):
         page_json = self.query_handle.retrieve_block_children(self.page_id)
         if page_json is None:
+            common_op.debug_log("query database get nothing, id=" + self.page_id,
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return False
         # 解析到临时文件中
         tmp_md_filename = self.mix_parser.mix_parser(json_handle=page_json, json_type="block")
         if tmp_md_filename is None:
-            logging.exception("page parser fail, id="+self.page_id)
+            common_op.debug_log("page parser fail, id="+self.page_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
 
         if file_name is not None:
             shutil.copyfile(tmp_md_filename, file_name)
+            common_op.debug_log("copy " + tmp_md_filename + " to " + file_name, level=NotionDump.DUMP_MODE_DEFAULT)
             return file_name
 
         return tmp_md_filename

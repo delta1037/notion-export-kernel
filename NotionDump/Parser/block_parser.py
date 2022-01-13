@@ -3,12 +3,11 @@
 # mail:geniusrabbit@qq.com
 
 import os
-import logging
 
 import NotionDump
 from NotionDump.Notion.Notion import NotionQuery
 from NotionDump.Parser.base_parser import BaseParser
-from NotionDump.utils import common_op, internal_var
+from NotionDump.utils import common_op
 
 
 # Block内容解析
@@ -107,14 +106,13 @@ class BlockParser:
             )
         elif block_type == "child_page":
             # Page child_page 子页面只返回链接，不返回内容
-            # print("child_page", self.block_parser.child_page_parser(block, self.parser_type))
             block_text = self.base_parser.child_page_parser(block, self.parser_type)
         elif block_type == "child_database":
             # Page child_database
             # Page中嵌套数据库的类型，只保存页面，不进行解析
             block_text = self.base_parser.child_database_parser(block, self.parser_type)
         else:
-            logging.exception("unknown page block properties type:" + block_type)
+            common_op.debug_log("unknown page block properties type:" + block_type, level=NotionDump.DUMP_MODE_DEFAULT)
         return block_text
 
     def parser_block_list(self, block_list, indent=0):
@@ -183,7 +181,7 @@ class BlockParser:
         file.flush()
         file.close()
 
-        # print("write file " + tmp_md_filename)
+        common_op.debug_log("write file " + tmp_md_filename, level=NotionDump.DUMP_MODE_DEFAULT)
         # 将临时文件地址转出去，由外面进行进一步的操作
         return tmp_md_filename
 

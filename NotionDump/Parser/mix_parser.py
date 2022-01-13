@@ -3,7 +3,6 @@
 # mail:geniusrabbit@qq.com
 import copy
 import os
-import logging
 
 import NotionDump
 from NotionDump.Notion.Notion import NotionQuery
@@ -43,30 +42,29 @@ class MixParser:
 
     # 调试时显示子页面内容
     def __test_show_child_page(self):
-        print("in page_id: ", self.mix_id, internal_var.PAGE_DIC)
+        if NotionDump.DUMP_MODE == NotionDump.DUMP_MODE_DEBUG:
+            print("in page_id: ", self.mix_id, internal_var.PAGE_DIC)
 
     def __recursion_mix_parser(self):
         update_flag = False
         recursion_page = copy.deepcopy(internal_var.PAGE_DIC)
         for child_id in recursion_page:
-            # 判断页面是子页面还是链接页面，链接页面不进行解析
+            # 判断页面是子页面还是链接页面，链接页面不进行解析(因为添加链接页面时把原页面也加进来了)
             if common_op.is_link_page(child_id, recursion_page[child_id]):
                 common_op.update_page_recursion(child_id, recursion=True)
                 continue
             # 判断页面是否已经操作过
             if common_op.is_page_recursion(child_id):
                 update_flag = True
-                # 调试
-                if NotionDump.DUMP_DEBUG:
-                    print("# start child_page_id=", child_id)
-                    print(self.__test_show_child_page())
+                common_op.debug_log("start child_page_id=", child_id)
+                self.__test_show_child_page()
                 # 先更新页面的状态，无论获取成功或者失败都过去了，只获取一次
                 common_op.update_page_recursion(child_id, recursion=True)
-
+                common_op.debug_log("get page " + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
                 if common_op.is_page(child_id):
                     page_json = self.query_handle.retrieve_block_children(child_id)
                     if page_json is None:
-                        logging.log(logging.ERROR, "get page error, id=" + child_id)
+                        common_op.debug_log("get page error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
                         continue
                     # 解析到临时文件中
                     tmp_filename = self.block_parser.block_to_md(page_json, new_id=child_id)
@@ -75,36 +73,37 @@ class MixParser:
                     # page里面搞一个Database的解析器
                     db_json = self.query_handle.query_database(child_id)
                     if db_json is None:
-                        logging.log(logging.ERROR, "get page error, id=" + child_id)
+                        common_op.debug_log("get page error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
                         continue
                     # 获取解析后的数据
                     tmp_filename = self.database_parser.database_to_csv(db_json, new_id=child_id)
                     child_pages_dic = self.database_parser.get_child_pages_dic()
 
+                common_op.debug_log("parser page " + child_id + " success", level=NotionDump.DUMP_MODE_DEFAULT)
                 # 再更新本地的存放路径
                 common_op.update_child_page_stats(child_id, dumped=True, local_path=tmp_filename)
                 # 从页面里获取到所有的子页面,并将子页面添加到父id中
                 common_op.update_child_pages(child_pages_dic, child_id)
 
                 # 调试
-                if NotionDump.DUMP_DEBUG:
-                    print("# end child_page_id=", child_id)
-                    print(self.__test_show_child_page())
+                common_op.debug_log("# end child_page_id=", child_id)
+                self.__test_show_child_page()
         if update_flag:
             self.__recursion_mix_parser()
 
     # col_name_list 是数据库的可选字段
     def mix_parser(self, json_handle, json_type, col_name_list=None):
         # 解析到临时文件中
+        common_op.debug_log("parser_type:" + json_type, level=NotionDump.DUMP_MODE_DEFAULT)
         if json_type == "database":
             tmp_filename = self.database_parser.database_to_csv(json_handle, col_name_list=col_name_list)
         elif json_type == "block":
             tmp_filename = self.block_parser.block_to_md(json_handle)
         else:
-            logging.exception("unknown parser_type:" + json_type)
+            common_op.debug_log("unknown parser_type:" + json_type, level=NotionDump.DUMP_MODE_DEFAULT)
             return None
-
         # 更新已经获取到的页面的状态(现有内容，再更新状态)
+        common_op.debug_log("update root page: " + self.mix_id + " recursion get child page", level=NotionDump.DUMP_MODE_DEFAULT)
         common_op.update_child_page_stats(self.mix_id, dumped=True, main_page=True,
                                           local_path=tmp_filename, page_type=json_type)
         common_op.update_page_recursion(self.mix_id, recursion=True)
@@ -114,7 +113,7 @@ class MixParser:
         elif json_type == "block":
             common_op.update_child_pages(self.block_parser.get_child_pages_dic(), self.mix_id)
         else:
-            logging.exception("unknown parser_type:" + json_type)
+            common_op.debug_log("unknown parser_type:" + json_type, level=NotionDump.DUMP_MODE_DEFAULT)
             return None
 
         if self.export_child_page:
