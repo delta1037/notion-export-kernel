@@ -13,19 +13,28 @@ from NotionDump.utils import internal_var
 
 class Page:
     # 初始化
-    def __init__(self, page_id, query_handle: NotionQuery, export_child_pages=False, parser_type=NotionDump.PARSER_TYPE_MD):
+    def __init__(
+            self,
+            page_id,
+            query_handle: NotionQuery,
+            export_child_pages=False,
+            page_parser_type=NotionDump.PARSER_TYPE_MD,
+            db_parser_type=NotionDump.PARSER_TYPE_PLAIN
+    ):
         self.page_id = page_id.replace('-', '')
         self.query_handle = query_handle
         # 是否导出子页面
         self.export_child_page = export_child_pages
-        self.parser_type = parser_type
+        self.page_parser_type = page_parser_type
+        self.db_parser_type = db_parser_type
 
         # 构造解析器
         self.mix_parser = MixParser(
             mix_id=self.page_id,
             query_handle=self.query_handle,
             export_child_pages=self.export_child_page,
-            parser_type=self.parser_type
+            page_parser_type=self.page_parser_type,
+            db_parser_type=self.db_parser_type
         )
 
         # 创建临时文件夹

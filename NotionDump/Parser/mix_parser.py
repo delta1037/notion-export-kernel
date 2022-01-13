@@ -19,12 +19,14 @@ class MixParser:
             mix_id,
             query_handle: NotionQuery,
             export_child_pages=False,
-            parser_type=NotionDump.PARSER_TYPE_MD,
+            page_parser_type=NotionDump.PARSER_TYPE_MD,
+            db_parser_type=NotionDump.PARSER_TYPE_PLAIN,
             col_name_list=None,  # 数据库使用的字段
     ):
         self.mix_id = mix_id
         self.query_handle = query_handle
-        self.parser_type = parser_type
+        self.page_parser_type = page_parser_type
+        self.db_parser_type = db_parser_type
 
         # 是否导出子页面,也就是递归操作
         self.export_child_page = export_child_pages
@@ -36,9 +38,9 @@ class MixParser:
 
         # 解析器
         # 这里传入handle是为了子块的解析
-        self.block_parser = BlockParser(self.mix_id, self.query_handle, parser_type=self.parser_type)
+        self.block_parser = BlockParser(self.mix_id, self.query_handle, parser_type=self.page_parser_type)
         # 初始化一个Database对象，这里page id无关紧要
-        self.database_parser = DatabaseParser(self.mix_id, parser_type=self.parser_type)
+        self.database_parser = DatabaseParser(self.mix_id, parser_type=self.db_parser_type)
 
     # 调试时显示子页面内容
     def __test_show_child_page(self):

@@ -226,8 +226,7 @@ class BaseParser:
             common_op.add_new_child_page(self.child_pages, key_id=page_id, page_name=title_ret)
 
             # 如果有子页面就添加一个占位符，之后方便重定位
-            if parser_type == NotionDump.PARSER_TYPE_MD:
-                title_ret = content_format.get_page_format_md(page_id)
+            title_ret = content_format.get_database_title_format(page_id)
         return title_ret
 
     # 数据库 rich_text

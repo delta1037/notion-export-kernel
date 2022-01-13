@@ -12,6 +12,11 @@ def get_page_format_md(page_id):
     return "[" + page_id + "]()"
 
 
+# 数据库title格式
+def get_database_title_format(title_id):
+    return "[" + title_id + "]()"
+
+
 # 获取page的格式 纯文本只填充名字即可
 def get_page_format_plain(page_name):
     return page_name

@@ -17,14 +17,16 @@ class Dump:
             dump_id,
             query_handle: NotionQuery,
             export_child_pages=False,
-            parser_type=NotionDump.PARSER_TYPE_MD,
+            page_parser_type=NotionDump.PARSER_TYPE_MD,
+            db_parser_type=NotionDump.PARSER_TYPE_PLAIN,
             dump_type=NotionDump.DUMP_TYPE_PAGE
     ):
         self.dump_id = dump_id.replace('-', '')
         self.query_handle = query_handle
         # 是否导出子页面
         self.export_child_page = export_child_pages
-        self.parser_type = parser_type
+        self.page_parser_type = page_parser_type
+        self.db_parser_type = db_parser_type
         self.dump_type = dump_type
 
         self.handle = None
@@ -32,19 +34,25 @@ class Dump:
             self.handle = Page(
                 page_id=self.dump_id,
                 query_handle=self.query_handle,
-                export_child_pages=self.export_child_page
+                export_child_pages=self.export_child_page,
+                page_parser_type=self.page_parser_type,
+                db_parser_type=self.db_parser_type
             )
         elif dump_type == NotionDump.DUMP_TYPE_BLOCK:
             self.handle = Block(
                 block_id=self.dump_id,
                 query_handle=self.query_handle,
-                export_child_pages=self.export_child_page
+                export_child_pages=self.export_child_page,
+                page_parser_type=self.page_parser_type,
+                db_parser_type=self.db_parser_type
             )
         elif dump_type == NotionDump.DUMP_TYPE_DB_TABLE:
             self.handle = Database(
                 database_id=self.dump_id,
                 query_handle=self.query_handle,
-                export_child_pages=self.export_child_page
+                export_child_pages=self.export_child_page,
+                page_parser_type=self.page_parser_type,
+                db_parser_type=self.db_parser_type
             )
         else:
             common_op.debug_log("unknown dump type:" + str(self.dump_type), level=NotionDump.DUMP_MODE_DEFAULT)
