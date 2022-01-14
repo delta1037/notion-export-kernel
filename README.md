@@ -1,12 +1,16 @@
 # notion-dump-kernel
 
-[English_Version](https://github.com/delta1037/notion-dump/blob/main/README_En.md)
+[English_Version](https://github.com/delta1037/notion-dump-kernel/blob/main/README_En.md)
 
 ------
 
 ## 一、项目说明
 
-本仓库是基于notion-client（notion官方API）的开发，主要实现目标有
+**注意该项目只做个人学习使用，官方API禁止解析API获取到的数据**（use any scraping, data harvesting, web crawlers, or other data extraction methods to extract data from the API）（所以**建议不要对包含大量子页面的page进行导出**）
+
+本仓库是基于notion-client（notion官方API）的开发，最初目的是为[从notion导出电子笔记](https://github.com/delta1037/KnowledgeShare)提供一种便利的方式
+
+本项目功能
 
 - [x] 将Notion数据库（Table）导出为CSV文件
 - [x] 将Notion Page页面或者一个单独的Block导出为md文件
