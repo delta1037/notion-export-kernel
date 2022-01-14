@@ -2,6 +2,9 @@
 # Date: 2022/01/08
 # mail:geniusrabbit@qq.com
 
+# ms
+FRIENDLY_USE_API = 500
+
 # 导出页面结构
 PAGE_DIC = {}
 

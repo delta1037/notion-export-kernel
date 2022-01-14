@@ -2,11 +2,13 @@
 # Date: 2022/01/10
 # mail:geniusrabbit@qq.com
 import os
+from time import sleep
+
 from notion_client import Client, AsyncClient
 from notion_client import APIErrorCode, APIResponseError
 
 import NotionDump
-from NotionDump.utils import common_op
+from NotionDump.utils import common_op, internal_var
 
 
 class NotionQuery:
@@ -30,8 +32,14 @@ class NotionQuery:
         if not os.path.exists(self.tmp_dir):
             os.mkdir(self.tmp_dir)
 
+        self.friendly_time = internal_var.FRIENDLY_USE_API
+
+    def __friendly_use_api(self):
+        sleep(self.friendly_time / 1000)
+
     # 获取该块下所有的子块
     def retrieve_block_children(self, block_id, page_size=50):
+        self.__friendly_use_api()
         query_post = {
             "block_id": block_id,
             "page_size": page_size
@@ -67,6 +75,7 @@ class NotionQuery:
 
     # 获取到所有的数据库数据(JSon格式)
     def query_database(self, database_id, db_q_filter="{}", db_q_sorts="[]"):
+        self.__friendly_use_api()
         # 组合查询条件
         query_post = {"database_id": database_id}
         if db_q_sorts != "[]":
@@ -105,6 +114,7 @@ class NotionQuery:
 
     # 获取数据库信息
     def retrieve_database(self, database_id):
+        self.__friendly_use_api()
         try:
             retrieve_ret = self.client.databases.retrieve(database_id=database_id)
             if NotionDump.DUMP_MODE_DEBUG:
@@ -126,6 +136,7 @@ class NotionQuery:
 
     # 获取Page的信息
     def retrieve_page(self, page_id):
+        self.__friendly_use_api()
         try:
             retrieve_ret = self.client.pages.retrieve(page_id=page_id)
             if NotionDump.DUMP_MODE_DEBUG:

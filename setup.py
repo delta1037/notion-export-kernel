@@ -27,7 +27,7 @@ REQUIRES = ["notion-client>=0.8.0"]
 
 setup(
     name="notion-dump-kernel",
-    version="0.0.6",
+    version="0.1.0",
     author="delta1037",
     author_email="geniusrabbit@qq.com",
     url="https://github.com/delta1037/notion-dump-kernel",
@@ -41,7 +41,7 @@ setup(
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.9",
