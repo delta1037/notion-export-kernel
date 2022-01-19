@@ -8,13 +8,20 @@ def get_mention_format(mention_content):
 
 
 # 获取page的格式 运行过程中只填充id，后续调整页面供定位使用
-def get_page_format_md(page_id):
-    return "[" + page_id + "]()"
+def get_page_format_md(page_id, page_name, export_child):
+    if export_child:
+        return "[" + page_id + "]()"
+    else:
+        return "[" + page_name + "](" + page_id + ")"
 
 
 # 数据库title格式
-def get_database_title_format(title_id):
-    return "[" + title_id + "]()"
+def get_database_title_format(title_id, title_ret, export_child):
+    if export_child :
+        return "[" + title_id + "]()"
+    else:
+        # 不导出子页面直接把标题填上去
+        return title_ret
 
 
 # 获取page的格式 纯文本只填充名字即可

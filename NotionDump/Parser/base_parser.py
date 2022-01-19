@@ -9,8 +9,9 @@ from NotionDump.utils import internal_var
 
 
 class BaseParser:
-    def __init__(self, base_id):
+    def __init__(self, base_id, export_child=False):
         self.base_id = base_id.replace('-', '')
+        self.export_child = export_child
 
         # 设置变量存放子page 字典
         self.child_pages = {}
@@ -81,7 +82,7 @@ class BaseParser:
                 # 将页面保存，等待进一步递归操作
                 # 保存子页面信息
                 common_op.debug_log("child_page_parser add page id = " + page_id + "_" + text_str)
-                text_str = content_format.get_page_format_md(page_id + "_" + text_str)
+                text_str = content_format.get_page_format_md(page_id + "_" + text_str, text_str, export_child=self.export_child)
 
         if parser_type == NotionDump.PARSER_TYPE_MD:
             # 解析annotations部分，为text_str添加格式
@@ -189,7 +190,7 @@ class BaseParser:
                 common_op.add_new_child_page(self.child_pages, key_id=page_id, page_name=page_name)
 
             if parser_type == NotionDump.PARSER_TYPE_MD:
-                mention_plain = content_format.get_page_format_md(page_id)
+                mention_plain = content_format.get_page_format_md(page_id, page_name, export_child=self.export_child)
             else:
                 mention_plain = page_name
         else:
@@ -226,7 +227,7 @@ class BaseParser:
             common_op.add_new_child_page(self.child_pages, key_id=page_id, page_name=title_ret)
 
             # 如果有子页面就添加一个占位符，之后方便重定位
-            title_ret = content_format.get_database_title_format(page_id)
+            title_ret = content_format.get_database_title_format(page_id, title_ret, self.export_child)
         return title_ret
 
     # 数据库 rich_text
@@ -368,6 +369,19 @@ class BaseParser:
             if ret_str != "":
                 ret_str += ","  # 多个文件之间用“,”分割
             ret_str += self.__file_parser(file, parser_type)
+        return ret_str
+
+    # 数据库 rollup 数据
+    def rollup_parser(self, block_handle):
+        if block_handle["type"] != "rollup":
+            common_op.debug_log("rollup type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
+            return ""
+        rollup_block = block_handle["rollup"]
+        ret_str = ""
+        if rollup_block[rollup_block["type"]] is None:
+            return ret_str
+        ret_str = rollup_block[rollup_block["type"]]
         return ret_str
 
     # Page paragraph
@@ -584,7 +598,7 @@ class BaseParser:
         page_body = block_handle["child_page"]
         if page_body["title"] == "":
             if parser_type == NotionDump.PARSER_TYPE_MD:
-                return content_format.get_page_format_md("NULL Page")
+                return content_format.get_page_format_md("NULL Page", "NULL Page", export_child=self.export_child)
             else:
                 return content_format.get_page_format_plain("NULL Page")
         else:
@@ -595,7 +609,7 @@ class BaseParser:
             common_op.add_new_child_page(self.child_pages, key_id=page_id, page_name=page_body["title"])
 
             if parser_type == NotionDump.PARSER_TYPE_MD:
-                return content_format.get_page_format_md(page_id)
+                return content_format.get_page_format_md(page_id, page_body["title"], export_child=self.export_child)
             else:
                 return content_format.get_page_format_plain(page_body["title"])
 
@@ -622,6 +636,10 @@ class BaseParser:
 
         # 子数据库要返回一个链接占位符，供后续解析使用
         if parser_type == NotionDump.PARSER_TYPE_MD:
-            return content_format.get_page_format_md(child_db_id)
+            return content_format.get_page_format_md(
+                child_db_id,
+                block_handle["child_database"]["title"],
+                export_child=self.export_child
+            )
         else:
             return content_format.get_page_format_plain(block_handle["child_database"]["title"])

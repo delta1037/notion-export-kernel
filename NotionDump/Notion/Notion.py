@@ -57,7 +57,7 @@ class NotionQuery:
                     **query_post
                 )
                 next_cur = db_query_ret["next_cursor"]
-            if NotionDump.DUMP_MODE_DEBUG:
+            if NotionDump.DUMP_MODE == NotionDump.DUMP_MODE_DEBUG:
                 self.__save_to_json(query_ret, block_id, prefix="retrieve_")
             return query_ret
         except APIResponseError as error:
@@ -96,7 +96,7 @@ class NotionQuery:
                 )
                 # TODO 这里还没有将内容搞出来
                 next_cur = db_query_ret["next_cursor"]
-            if NotionDump.DUMP_MODE_DEBUG:
+            if NotionDump.DUMP_MODE == NotionDump.DUMP_MODE_DEBUG:
                 self.__save_to_json(query_ret, database_id, prefix="query_")
             return query_ret
         except APIResponseError as error:
@@ -117,7 +117,7 @@ class NotionQuery:
         self.__friendly_use_api()
         try:
             retrieve_ret = self.client.databases.retrieve(database_id=database_id)
-            if NotionDump.DUMP_MODE_DEBUG:
+            if NotionDump.DUMP_MODE == NotionDump.DUMP_MODE_DEBUG:
                 self.__save_to_json(retrieve_ret, database_id, prefix="retrieve_")
             return retrieve_ret
         except APIResponseError as error:
@@ -139,7 +139,7 @@ class NotionQuery:
         self.__friendly_use_api()
         try:
             retrieve_ret = self.client.pages.retrieve(page_id=page_id)
-            if NotionDump.DUMP_MODE_DEBUG:
+            if NotionDump.DUMP_MODE == NotionDump.DUMP_MODE_DEBUG:
                 self.__save_to_json(retrieve_ret, page_id, prefix="retrieve_")
             return retrieve_ret
         except APIResponseError as error:

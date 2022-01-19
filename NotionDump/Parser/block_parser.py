@@ -13,10 +13,18 @@ from NotionDump.utils import common_op
 # Block内容解析
 class BlockParser:
     # 初始化
-    def __init__(self, block_id, query_handle: NotionQuery, parser_type=NotionDump.PARSER_TYPE_MD):
+    def __init__(
+            self,
+            block_id,
+            query_handle: NotionQuery,
+            parser_type=NotionDump.PARSER_TYPE_MD,
+            export_child_pages=False
+    ):
         self.block_id = block_id.replace('-', '')
         self.query_handle = query_handle
         self.parser_type = parser_type
+        # 是否导出子页面,也就是递归操作
+        self.export_child_page = export_child_pages
 
         # 创建临时文件夹
         self.tmp_dir = NotionDump.TMP_DIR
@@ -24,7 +32,10 @@ class BlockParser:
             os.mkdir(self.tmp_dir)
 
         # 基解析器
-        self.base_parser = BaseParser(base_id=self.block_id)
+        self.base_parser = BaseParser(
+            base_id=self.block_id,
+            export_child=self.export_child_page
+        )
 
     # 获取子页面字典
     def get_child_pages_dic(self):

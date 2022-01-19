@@ -38,9 +38,18 @@ class MixParser:
 
         # 解析器
         # 这里传入handle是为了子块的解析
-        self.block_parser = BlockParser(self.mix_id, self.query_handle, parser_type=self.page_parser_type)
+        self.block_parser = BlockParser(
+            block_id=self.mix_id,
+            query_handle=self.query_handle,
+            parser_type=self.page_parser_type,
+            export_child_pages=self.export_child_page
+        )
         # 初始化一个Database对象，这里page id无关紧要
-        self.database_parser = DatabaseParser(self.mix_id, parser_type=self.db_parser_type)
+        self.database_parser = DatabaseParser(
+            self.mix_id,
+            parser_type=self.db_parser_type,
+            export_child_pages=self.export_child_page
+        )
 
     # 调试时显示子页面内容
     def __test_show_child_page(self):
@@ -122,3 +131,15 @@ class MixParser:
             self.__recursion_mix_parser()
 
         return tmp_filename
+
+    def database_collection(self, json_handle, json_type, col_name_list=None):
+        # 只能获取数据库类型
+        common_op.debug_log("parser_type:" + json_type, level=NotionDump.DUMP_MODE_DEFAULT)
+        if json_type == "database":
+            return self.database_parser.database_to_dic(json_handle, col_name_list=col_name_list)
+        elif json_type == "block":
+            common_op.debug_log("need database get type:" + json_type, level=NotionDump.DUMP_MODE_DEFAULT)
+            return None
+        else:
+            common_op.debug_log("unknown parser_type:" + json_type, level=NotionDump.DUMP_MODE_DEFAULT)
+            return None

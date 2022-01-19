@@ -54,11 +54,13 @@ class Database:
             db_q_filter=db_q_filter,
             db_q_sorts=db_q_sorts)
         if db_json is None:
-            common_op.debug_log("query database get nothing, id=" + self.database_id, level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log("query database get nothing, id=" + self.database_id,
+                                level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
 
         # 解析到临时文件中
-        tmp_csv_filename = self.mix_parser.mix_parser(json_handle=db_json, json_type="database", col_name_list=col_name_list)
+        tmp_csv_filename = self.mix_parser.mix_parser(json_handle=db_json, json_type="database",
+                                                      col_name_list=col_name_list)
         if tmp_csv_filename is None:
             common_op.debug_log("page parser fail, id=" + self.database_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
@@ -94,3 +96,19 @@ class Database:
         if json_name is None:
             json_name = self.tmp_dir + self.database_id + ".json"
         common_op.save_json_to_file(db_json, json_name)
+
+    def dump_to_dic(self, col_name_list=None, db_q_filter="{}", db_q_sorts="[]"):
+        db_json = self.query_handle.query_database(
+            database_id=self.database_id,
+            db_q_filter=db_q_filter,
+            db_q_sorts=db_q_sorts)
+        if db_json is None:
+            common_op.debug_log("query database get nothing, id=" + self.database_id,
+                                level=NotionDump.DUMP_MODE_DEFAULT)
+            return ""
+
+        return self.mix_parser.database_collection(
+            json_handle=db_json,
+            json_type="database",
+            col_name_list=col_name_list
+        )
