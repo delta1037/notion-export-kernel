@@ -2,8 +2,6 @@
 
 ## Description
 
-**You should know this program is for personal study! The officail have a restriction on using data extraction methods to extract data from the API** (use any scraping, data harvesting, web crawlers, or other data extraction methods to extract data from the API)  ( So don't use this tool to export a page contain many sub-pages! **At your own risk**)
-
 This Repo is a development based on notion-client（notion official API），and the initial target is to provide convenience for [exporting notes and generating pdf](https://github.com/delta1037/KnowledgeShare) files
 
 Main targets
@@ -12,6 +10,7 @@ Main targets
 - [x] Export Notion Page or Block as md file
 - [x] Recursion Export child Page or Database(Table)  in Page
 - [x] Recursion Export child Page in Database(Table) （All in all，all can Recursion Export）
+- [ ] Export Img and Files
 - [ ] Export Notion Page as SQL
 - [ ] Export  SQL as md&CSV file
 

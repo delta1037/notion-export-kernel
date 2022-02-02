@@ -6,9 +6,7 @@
 
 ## 一、项目说明
 
-**注意该项目只做个人学习使用，官方API禁止解析API获取到的数据**（use any scraping, data harvesting, web crawlers, or other data extraction methods to extract data from the API）（所以**建议不要对包含大量子页面的page进行导出**）
-
-本仓库是基于notion-client（notion官方API）的开发，最初目的是为[从notion导出电子笔记](https://github.com/delta1037/KnowledgeShare)提供一种便利的方式
+本仓库是基于notion-client（notion官方API）的开发，最初目的是为[从notion导出电子笔记](https://github.com/delta1037/KnowledgeShare)提供一种便利的方式，将页面内所有的内容导出为Markdown&CSV格式。
 
 本项目功能
 
@@ -16,6 +14,7 @@
 - [x] 将Notion Page页面或者一个单独的Block导出为md文件
 - [x] 递归导出page中的指向page或者数据库（Table）中的子页面
 - [x] 递归导出数据库中Title对应的Page页面，及其递归（和上一条结合起来简而言之对于Page和Database Table之间的相互嵌套均可以递归导出）
+- [ ] 将文件和图片下载
 - [ ] 将Notion Page页面导出到数据库（SQL）
 - [ ] 将数据库（SQL）导出成md&CSV文件
 
