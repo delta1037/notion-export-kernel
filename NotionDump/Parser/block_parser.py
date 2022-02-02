@@ -122,6 +122,12 @@ class BlockParser:
             # Page child_database
             # Page中嵌套数据库的类型，只保存页面，不进行解析
             block_text = self.base_parser.child_database_parser(block, self.parser_type)
+        elif block_type == "image":
+            # Page image
+            block_text = self.base_parser.image_parser(block, self.parser_type)
+        elif block_type == "file":
+            # Page file
+            block_text = self.base_parser.file_parser(block, self.parser_type)
         else:
             common_op.debug_log("unknown page block properties type:" + block_type, level=NotionDump.DUMP_MODE_DEFAULT)
         return block_text

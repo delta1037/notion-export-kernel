@@ -8,6 +8,7 @@ import NotionDump
 from NotionDump.Notion.Notion import NotionQuery
 from NotionDump.Parser.block_parser import BlockParser
 from NotionDump.Parser.database_parser import DatabaseParser
+from NotionDump.Parser.download_parser import DownloadParser
 from NotionDump.utils import common_op, internal_var
 
 
@@ -50,6 +51,8 @@ class MixParser:
             parser_type=self.db_parser_type,
             export_child_pages=self.export_child_page
         )
+        # 初始化一个下载器，，这里page id无关紧要
+        self.download_parser = DownloadParser(self.mix_id)
 
     # 调试时显示子页面内容
     def __test_show_child_page(self):
@@ -80,7 +83,7 @@ class MixParser:
                     # 解析到临时文件中
                     tmp_filename = self.block_parser.block_to_md(page_json, new_id=child_id)
                     child_pages_dic = self.block_parser.get_child_pages_dic()
-                else:
+                elif common_op.is_db(child_id):
                     # page里面搞一个Database的解析器
                     db_json = self.query_handle.query_database(child_id)
                     if db_json is None:
@@ -89,6 +92,17 @@ class MixParser:
                     # 获取解析后的数据
                     tmp_filename = self.database_parser.database_to_csv(db_json, new_id=child_id)
                     child_pages_dic = self.database_parser.get_child_pages_dic()
+                elif common_op.is_download(child_id):
+                    # 可下载类型
+                    # 获取下载后的数据
+                    tmp_filename = self.download_parser.download_to_file(new_id=child_id, child_page_item=recursion_page[child_id])
+                    child_pages_dic = {}
+                    if tmp_filename == "":
+                        common_op.debug_log("file download error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
+                        continue
+                else:
+                    common_op.debug_log("!!! unknown child id type, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
+                    continue
 
                 common_op.debug_log("parser page " + child_id + " success", level=NotionDump.DUMP_MODE_DEFAULT)
                 # 再更新本地的存放路径

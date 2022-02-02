@@ -57,11 +57,11 @@ if __name__ == '__main__':
         exit(-1)
 
     # 数据库存储到文件,递归
-    # test_db_table_inline_parser_file(query_handle, True)
+    test_db_table_inline_parser_file(query_handle, True)
 
     # 数据库存储到文件，非递归
     # test_db_table_inline_parser_file(query_handle, False)
 
     # 数据库存储到字典
-    test_db_table_inline_parser_dic(query_handle)
+    # test_db_table_inline_parser_dic(query_handle)
 

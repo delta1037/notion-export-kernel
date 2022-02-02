@@ -643,3 +643,78 @@ class BaseParser:
             )
         else:
             return content_format.get_page_format_plain(block_handle["child_database"]["title"])
+
+    # Page image
+    def image_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
+        if block_handle["type"] != "image":
+            common_op.debug_log("image type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
+            return ""
+
+        # 子数据库保存在页面表中，不解析
+        image_id = block_handle["id"].replace('-', '')
+        image_name = self.__text_list_parser(block_handle["image"]["caption"], parser_type)
+        image_url = block_handle["image"]["file"]["url"]
+        if image_name == "":
+            # 如果文件没有名字使用id作为默认名字
+            image_name = image_id
+        common_op.add_new_child_page(
+            self.child_pages,
+            key_id=image_id,
+            link_id=image_url,
+            page_type="image",
+            page_name=image_name
+        )
+
+        common_op.debug_log(
+            "image_parser add page id = " + image_id + "name : " + image_name)
+        common_op.debug_log(internal_var.PAGE_DIC)
+        common_op.debug_log("#############")
+        common_op.debug_log(self.child_pages)
+
+        # 图片类型要返回一个链接占位符，供后续解析使用
+        if parser_type == NotionDump.PARSER_TYPE_MD:
+            return content_format.get_page_format_md(
+                image_id,
+                image_name,
+                export_child=self.export_child
+            )
+        else:
+            return content_format.get_page_format_plain(image_name)
+
+    # Page file
+    def file_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
+        if block_handle["type"] != "file":
+            common_op.debug_log("file type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
+            return ""
+
+        file_id = block_handle["id"].replace('-', '')
+        file_name = self.__text_list_parser(block_handle["file"]["caption"], parser_type)
+        file_url = block_handle["file"]["file"]["url"]
+        if file_name == "":
+            # 如果文件没有名字使用id作为默认名字
+            file_name = file_id
+        common_op.add_new_child_page(
+            self.child_pages,
+            key_id=file_id,
+            link_id=file_url,
+            page_type="file",
+            page_name=file_name
+        )
+
+        common_op.debug_log(
+            "file_parser add page id = " + file_id + "name : " + file_name)
+        common_op.debug_log(internal_var.PAGE_DIC)
+        common_op.debug_log("#############")
+        common_op.debug_log(self.child_pages)
+
+        # 文件类型要返回一个链接占位符，供后续解析使用
+        if parser_type == NotionDump.PARSER_TYPE_MD:
+            return content_format.get_page_format_md(
+                file_id,
+                file_name,
+                export_child=self.export_child
+            )
+        else:
+            return content_format.get_page_format_plain(file_name)

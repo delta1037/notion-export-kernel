@@ -88,8 +88,8 @@ def add_new_child_page(child_pages, key_id, link_id=None, page_name=None, page_t
     # 如果不存在或者上一个是软连接创建的，就重新赋值
     child_pages[key_id] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
     child_pages[key_id]["inter_soft_page"] = inter_soft_page
-    if link_id is not None:
-        # 如果是软链接，递归看一下对应的子页面在不在,如果不在就先占个坑
+    if link_id is not None and page_type != "image" and page_type != "file":
+        # 如果是软链接，递归看一下对应的子页面在不在,如果不在就先占个坑(忽略file和image类型)
         # inter_soft_page 表明该项是软连接创建的
         debug_log("SOFT_PAGE key_id " + key_id + " link_id " + link_id + ", create a null page with link_id",
                   level=NotionDump.DUMP_MODE_DEFAULT)
@@ -121,8 +121,25 @@ def is_page_recursion(page_id):
 def is_page(page_id):
     if page_id not in internal_var.PAGE_DIC:
         debug_log("page id not exist!!!", level=NotionDump.DUMP_MODE_DEFAULT)
-        return True
+        return False
     return internal_var.PAGE_DIC[page_id]["type"] == "page"
+
+
+# database 返回True
+def is_db(db_id):
+    if db_id not in internal_var.PAGE_DIC:
+        debug_log("db_id not exist!!!", level=NotionDump.DUMP_MODE_DEFAULT)
+        return False
+    return internal_var.PAGE_DIC[db_id]["type"] == "database"
+
+
+# database 返回True
+def is_download(download_id):
+    if download_id not in internal_var.PAGE_DIC:
+        debug_log("download_id not exist!!!", level=NotionDump.DUMP_MODE_DEFAULT)
+        return False
+    # 可下载类型
+    return internal_var.PAGE_DIC[download_id]["type"] == "image" or internal_var.PAGE_DIC[download_id]["type"] == "file"
 
 
 # 判断是否是链接页面
