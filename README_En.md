@@ -10,7 +10,7 @@ Main targets
 - [x] Export Notion Page or Block as md file
 - [x] Recursion Export child Page or Database(Table)  in Page
 - [x] Recursion Export child Page in Database(Table) （All in all，all can Recursion Export）
-- [ ] Export Img and Files
+- [x] Export Img and Files
 - [ ] Export Notion Page as SQL
 - [ ] Export  SQL as md&CSV file
 
@@ -35,15 +35,14 @@ graph TD
     C --> D[Mix Parser]
 
     D --> E[Database Parser]
+    D --> I[Download Parser]
     D --> F[Block Parser]
-
+    
     E --> G[Base Parser]
     F --> G[Base Parser]
 
     B --> H[Query]
     C --> H[Query]
-    
-    J[utils]
 ```
 
 ![项目架构图](https://github.com/delta1037/notion-dump-kernel/blob/main/img/structure.png)

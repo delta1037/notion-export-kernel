@@ -14,7 +14,7 @@
 - [x] 将Notion Page页面或者一个单独的Block导出为md文件
 - [x] 递归导出page中的指向page或者数据库（Table）中的子页面
 - [x] 递归导出数据库中Title对应的Page页面，及其递归（和上一条结合起来简而言之对于Page和Database Table之间的相互嵌套均可以递归导出）
-- [ ] 将文件和图片下载
+- [x] 将文件和图片下载
 - [ ] 将Notion Page页面导出到数据库（SQL）
 - [ ] 将数据库（SQL）导出成md&CSV文件
 
@@ -39,15 +39,14 @@ graph TD
     C --> D[Mix Parser]
 
     D --> E[Database Parser]
+    D --> I[Download Parser]
     D --> F[Block Parser]
-
+    
     E --> G[Base Parser]
     F --> G[Base Parser]
 
     B --> H[Query]
     C --> H[Query]
-    
-    J[utils]
 ```
 
 

@@ -133,3 +133,4 @@ dmypy.json
 
 # tempfile
 Tests/.tmp/
+Examples/.tmp/
