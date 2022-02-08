@@ -38,7 +38,7 @@ class NotionQuery:
         sleep(self.friendly_time / 1000)
 
     # 获取该块下所有的子块
-    def retrieve_block_children(self, block_id, page_size=50):
+    def retrieve_block_children(self, block_id, page_size=100):
         self.__friendly_use_api()
         query_post = {
             "block_id": block_id,
@@ -49,14 +49,18 @@ class NotionQuery:
                 **query_post
             )
 
-            # 大量数据一次未读完（未测试）
+            # 大量数据一次未读完
             next_cur = query_ret["next_cursor"]
             while query_ret["has_more"]:
                 query_post["start_cursor"] = next_cur
+                common_op.debug_log(query_post, level=NotionDump.DUMP_MODE_DEFAULT)
                 db_query_ret = self.client.blocks.children.list(
                     **query_post
                 )
                 next_cur = db_query_ret["next_cursor"]
+                query_ret["results"] += db_query_ret["results"]
+                if next_cur is None:
+                    break
             if NotionDump.DUMP_MODE == NotionDump.DUMP_MODE_DEBUG:
                 self.__save_to_json(query_ret, block_id, prefix="retrieve_")
             return query_ret
@@ -87,15 +91,19 @@ class NotionQuery:
                 **query_post
             )
 
-            # 大量数据一次未读完（未测试）
+            # 大量数据一次未读完
             next_cur = query_ret["next_cursor"]
             while query_ret["has_more"]:
                 query_post["start_cursor"] = next_cur
-                db_query_ret = self.client.databases.query(
+                common_op.debug_log(query_post, level=NotionDump.DUMP_MODE_DEFAULT)
+                db_query_ret = self.client.blocks.children.list(
                     **query_post
                 )
-                # TODO 这里还没有将内容搞出来
                 next_cur = db_query_ret["next_cursor"]
+                query_ret["results"] += db_query_ret["results"]
+                if next_cur is None:
+                    break
+
             if NotionDump.DUMP_MODE == NotionDump.DUMP_MODE_DEBUG:
                 self.__save_to_json(query_ret, database_id, prefix="query_")
             return query_ret
