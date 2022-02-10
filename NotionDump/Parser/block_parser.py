@@ -125,9 +125,12 @@ class BlockParser:
         elif block_type == "image":
             # Page image
             block_text = self.base_parser.image_parser(block, self.parser_type)
-        elif block_type == "file":
+        elif block_type == "file" or block_type == "pdf":
             # Page file
             block_text = self.base_parser.file_parser(block, self.parser_type)
+        elif block_type == "bookmark":
+            # Page bookmark
+            block_text = self.base_parser.bookmark_parser(block, self.parser_type)
         else:
             common_op.debug_log("unknown page block properties type:" + block_type, level=NotionDump.DUMP_MODE_DEFAULT)
         return block_text

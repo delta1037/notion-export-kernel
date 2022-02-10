@@ -91,7 +91,7 @@ class DatabaseParser:
         page_list = database_handle.get("results")
         # 数据库是空的，直接返回完事
         if len(page_list) == 0:
-            return
+            return ""
 
         # col_name_list 是想要的列，并且会按照该顺序输出；如果没有给定则获取所有列
         if col_name_list is None:
@@ -150,7 +150,7 @@ class DatabaseParser:
             # 每一个page都有page id
             page_id = page["id"].replace('-', '')
             common_op.debug_log("database page id" + page_id)
-            db_dic_line = {}
+            db_dic_line = {"_page_id": page_id}
             for item in col_name_list:
                 # 解析每一个方格的内容
                 db_dic_line[item] = self.__parser_item(page["properties"][item], page_id)

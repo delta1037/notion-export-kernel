@@ -82,7 +82,8 @@ class BaseParser:
                 # 将页面保存，等待进一步递归操作
                 # 保存子页面信息
                 common_op.debug_log("child_page_parser add page id = " + page_id + "_" + text_str)
-                text_str = content_format.get_page_format_md(page_id + "_" + text_str, text_str, export_child=self.export_child)
+                text_str = content_format.get_page_format_md(page_id + "_" + text_str, text_str,
+                                                             export_child=self.export_child)
 
         if parser_type == NotionDump.PARSER_TYPE_MD:
             # 解析annotations部分，为text_str添加格式
@@ -115,7 +116,7 @@ class BaseParser:
             common_op.debug_log("people type error! id=" + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         # 优先获取名字
-        if block_handle["name"] is not None:
+        if "name" in block_handle.keys():
             return block_handle["name"]
         # 如果无法获取名字则返回id
         return block_handle["id"].replace('-', '')
@@ -209,7 +210,7 @@ class BaseParser:
         table_col_cells = block_handle["table_row"]["cells"]
         table_row = []
         for cell in table_col_cells:
-            table_row.append(self.__text_parser(cell[0], parser_type))
+            table_row.append(self.__text_list_parser(cell, parser_type))
         return table_row
 
     # 数据库 title
@@ -654,7 +655,14 @@ class BaseParser:
         # 子数据库保存在页面表中，不解析
         image_id = block_handle["id"].replace('-', '')
         image_name = self.__text_list_parser(block_handle["image"]["caption"], parser_type)
-        image_url = block_handle["image"]["file"]["url"]
+        image_url = ""
+        image_type = block_handle["image"]["type"]
+        if image_type in block_handle["image"].keys():
+            if "url" in block_handle["image"][image_type].keys():
+                image_url = block_handle["image"][image_type]["url"]
+        if image_url == "":
+            common_op.debug_log("unknown image type" + block_handle["image"]["type"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
         if image_name == "":
             # 如果文件没有名字使用id作为默认名字
             image_name = image_id
@@ -682,16 +690,24 @@ class BaseParser:
         else:
             return content_format.get_page_format_plain(image_name)
 
-    # Page file
+    # Page file(file,pdf)
     def file_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
-        if block_handle["type"] != "file":
+        if block_handle["type"] != "file" and block_handle["type"] != "pdf":
             common_op.debug_log("file type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
 
+        block_type = block_handle["type"]
         file_id = block_handle["id"].replace('-', '')
-        file_name = self.__text_list_parser(block_handle["file"]["caption"], parser_type)
-        file_url = block_handle["file"]["file"]["url"]
+        file_name = self.__text_list_parser(block_handle[block_type]["caption"], parser_type)
+        file_url = ""
+        file_type = block_handle[block_type]["type"]
+        if file_type in block_handle[block_type].keys():
+            if "url" in block_handle[block_type][file_type].keys():
+                file_url = block_handle[block_type][file_type]["url"]
+        if file_url == "":
+            common_op.debug_log("unknown block type" + block_handle[block_type]["type"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
         if file_name == "":
             # 如果文件没有名字使用id作为默认名字
             file_name = file_id
@@ -718,3 +734,22 @@ class BaseParser:
             )
         else:
             return content_format.get_page_format_plain(file_name)
+
+    # Page bookmark
+    def bookmark_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
+        bookmark_ret = ""
+        if block_handle["type"] != "bookmark":
+            common_op.debug_log("bookmark type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
+            return bookmark_ret
+        bookmark_name = self.__text_list_parser(block_handle["bookmark"]["caption"], parser_type)
+        if bookmark_name == "":
+            bookmark_name = block_handle["id"]
+        bookmark_url = block_handle["bookmark"]["url"]
+
+        # bookmark 类型要返回一个链接占位符，供后续解析使用
+        if parser_type == NotionDump.PARSER_TYPE_MD:
+            # file转换成文件链接的形式
+            return content_format.get_file_format_md(bookmark_name, bookmark_url)
+        else:
+            return content_format.get_file_format_plain(bookmark_name, bookmark_url)
