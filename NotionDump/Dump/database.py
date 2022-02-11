@@ -59,18 +59,18 @@ class Database:
             return ""
 
         # 解析到临时文件中
-        tmp_csv_filename = self.mix_parser.mix_parser(json_handle=db_json, json_type="database",
-                                                      col_name_list=col_name_list)
-        if tmp_csv_filename is None:
+        tmp_filename = self.mix_parser.mix_parser(json_handle=db_json, json_type="database",
+                                                  col_name_list=col_name_list)
+        if tmp_filename is None:
             common_op.debug_log("page parser fail, id=" + self.database_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
 
         if file_name is not None:
-            shutil.copyfile(tmp_csv_filename, file_name)
-            common_op.debug_log("copy " + tmp_csv_filename + " to " + file_name, level=NotionDump.DUMP_MODE_DEFAULT)
+            shutil.copyfile(tmp_filename, file_name)
+            common_op.debug_log("copy " + tmp_filename + " to " + file_name, level=NotionDump.DUMP_MODE_DEFAULT)
             return file_name
 
-        return tmp_csv_filename
+        return tmp_filename
 
     def dump_to_db(self, col_name_list=None, db_q_filter="{}", db_q_sorts="[]"):
         # 从配置文件中获取数据库配置，打开数据库，并将csv文件写入到数据库中

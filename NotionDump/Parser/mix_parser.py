@@ -90,7 +90,7 @@ class MixParser:
                         common_op.debug_log("get page error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
                         continue
                     # 获取解析后的数据
-                    tmp_filename = self.database_parser.database_to_csv(db_json, new_id=child_id)
+                    tmp_filename = self.database_parser.database_to_file(db_json, new_id=child_id)
                     child_pages_dic = self.database_parser.get_child_pages_dic()
                 elif common_op.is_download(child_id):
                     # 可下载类型
@@ -121,7 +121,7 @@ class MixParser:
         # 解析到临时文件中
         common_op.debug_log("parser_type:" + json_type, level=NotionDump.DUMP_MODE_DEFAULT)
         if json_type == "database":
-            tmp_filename = self.database_parser.database_to_csv(json_handle, col_name_list=col_name_list)
+            tmp_filename = self.database_parser.database_to_file(json_handle, col_name_list=col_name_list)
         elif json_type == "block":
             tmp_filename = self.block_parser.block_to_md(json_handle)
         else:

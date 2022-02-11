@@ -87,7 +87,7 @@ class DatabaseParser:
         return item_ret
 
     # 格式化存储，这里是临时文件存在方式（在外面转成数据库，或者最终输出CSV的格式）
-    def database_to_csv(self, database_handle, col_name_list=None, new_id=None):
+    def database_to_file(self, database_handle, col_name_list=None, new_id=None):
         page_list = database_handle.get("results")
         # 数据库是空的，直接返回完事
         if len(page_list) == 0:
@@ -98,16 +98,30 @@ class DatabaseParser:
             # 如果没有给定输出顺序，则获取到page中的所有列（注意不保证是显示的顺序！！！！）
             col_name_list = self.__get_col_name_list(page_list[0])
 
-        # 创建CSV文件
+        # 创建文件
+        suffix = ".csv"
+        if self.parser_type == NotionDump.PARSER_TYPE_MD:
+            suffix = ".md"
         if new_id is not None:
-            tmp_csv_filename = self.tmp_dir + new_id.replace('-', '') + ".csv"
+            tmp_filename = self.tmp_dir + new_id.replace('-', '') + suffix
         else:
-            tmp_csv_filename = self.tmp_dir + self.database_id + ".csv"
+            tmp_filename = self.tmp_dir + self.database_id + suffix
 
-        file = open(tmp_csv_filename, "w", encoding="utf-8", newline='')
-        csv_writer = csv.writer(file)
-        # 首先将列的名称写入到CSV文件中
-        csv_writer.writerow(col_name_list)
+        file = open(tmp_filename, "w", encoding="utf-8", newline='')
+
+        csv_writer = None
+        if self.parser_type == NotionDump.PARSER_TYPE_MD:
+            head_line = "|"
+            for it in col_name_list:
+                head_line += it + "|"
+            head_line += "\n|"
+            for i in range(len(col_name_list)):
+                head_line += " --- " + "|"
+            file.write(head_line + "\n")
+        else:
+            csv_writer = csv.writer(file)
+            # 首先将列的名称写入到CSV文件中
+            csv_writer.writerow(col_name_list)
 
         # 返回的内容好像是倒序的，先倒置过来吧
         page_list.reverse()
@@ -120,15 +134,27 @@ class DatabaseParser:
             for item in col_name_list:
                 # 解析每一个方格的内容
                 page_iter.append(self.__parser_item(page["properties"][item], page_id))
-            # 将内容填充到CSV中
-            csv_writer.writerow(page_iter)
-            common_op.debug_log("database page " + page_id + " write csv success")
+            # 将内容填充到文件中
+            if self.parser_type == NotionDump.PARSER_TYPE_MD:
+                page_line = "|"
+                for it in page_iter:
+                    if isinstance(it, str):
+                        page_line += it.replace('\n', '<br>') + "|"
+                    else:
+                        page_line += str(it) + "|"
+                file.write(page_line + "\n")
+            else:
+                if csv_writer is not None:
+                    csv_writer.writerow(page_iter)
+                    common_op.debug_log("database page " + page_id + " write csv success")
+                else:
+                    common_op.debug_log("database page " + page_id + " write csv fail", level=NotionDump.DUMP_MODE_DEFAULT)
         file.flush()
         file.close()
 
-        common_op.debug_log("write file " + tmp_csv_filename, level=NotionDump.DUMP_MODE_DEFAULT)
+        common_op.debug_log("write file " + tmp_filename, level=NotionDump.DUMP_MODE_DEFAULT)
         # 将临时文件地址转出去，由外面进行进一步的操作
-        return tmp_csv_filename
+        return tmp_filename
 
     def database_to_dic(self, database_handle, col_name_list=None, new_id=None):
         page_list = database_handle.get("results")

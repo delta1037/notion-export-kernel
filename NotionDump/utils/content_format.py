@@ -17,7 +17,7 @@ def get_page_format_md(page_id, page_name, export_child):
 
 # 数据库title格式
 def get_database_title_format(title_id, title_ret, export_child):
-    if export_child :
+    if export_child:
         return "[" + title_id + "]()"
     else:
         # 不导出子页面直接把标题填上去
@@ -45,8 +45,16 @@ def get_date_format(start, end):
 
 
 # 封装文件链接格式
-def get_file_format_md(filename, file_url):
-    return "[" + filename + "](" + file_url + ")"
+def get_file_format_md(filename, file_url, file_id="", export_child=False):
+    if export_child:
+        if file_id == "":
+            return "[" + filename + "](" + file_url + ")"
+        else:
+            # 等待重定位
+            return "[" + file_id + "]()"
+    else:
+        # 不导出子页面直接把标题填上去
+        return "[" + filename + "](" + file_url + ")"
 
 
 # 封装文件链接格式

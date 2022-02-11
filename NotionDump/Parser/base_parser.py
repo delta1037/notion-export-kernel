@@ -128,16 +128,38 @@ class BaseParser:
         user_body = block_handle["user"]
         return self.__people_parser(user_body)
 
-    def __file_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
+    def __db_file_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         if block_handle["type"] != "file":
             common_op.debug_log("file type error! id=" + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         filename = block_handle["name"]
         file_url = block_handle["file"]["url"]
+
+        # 解析文件的ID
+        url_prefix = file_url[0:file_url.rfind("/")]
+        file_id = url_prefix[url_prefix.rfind("/")+1:].replace('-', '')
+        common_op.debug_log("file id is : " + file_id)
+
+        if filename == "":
+            # 如果文件没有名字使用id作为默认名字
+            filename = file_id
+        common_op.add_new_child_page(
+            self.child_pages,
+            key_id=file_id,
+            link_id=file_url,
+            page_type="file",
+            page_name=filename
+        )
+        common_op.debug_log(
+            "file_parser add page id = " + file_id + "name : " + filename)
+        common_op.debug_log(internal_var.PAGE_DIC)
+        common_op.debug_log("#############")
+        common_op.debug_log(self.child_pages)
+
         # 格式处理简单格式（也可以转换成markdown格式[]()）
         if parser_type == NotionDump.PARSER_TYPE_MD:
             # file转换成文件链接的形式
-            return content_format.get_file_format_md(filename, file_url)
+            return content_format.get_file_format_md(filename, file_url, file_id, self.export_child)
         else:
             return content_format.get_file_format_plain(filename, file_url)
 
@@ -146,9 +168,11 @@ class BaseParser:
         if block_handle["type"] != "equation":
             common_op.debug_log("equation inline type error! id=" + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
-        return content_format.get_equation_inline(
-            self.__annotations_parser(block_handle["annotations"], block_handle["plain_text"])
-        )
+        # 公式删除富文本格式
+        # return content_format.get_equation_inline(
+        #     self.__annotations_parser(block_handle["annotations"], block_handle["plain_text"])
+        # )
+        return content_format.get_equation_inline(block_handle["plain_text"])
 
     # "$$ equation_block $$"
     def __equation_block_parser(self, block_handle):
@@ -368,8 +392,11 @@ class BaseParser:
             return ret_str
         for file in files_list:
             if ret_str != "":
-                ret_str += ","  # 多个文件之间用“,”分割
-            ret_str += self.__file_parser(file, parser_type)
+                if parser_type == NotionDump.PARSER_TYPE_MD:
+                    ret_str += "<br>"  # 多个文件之间用“<br>”分割
+                else:
+                    ret_str += ","  # 多个文件之间用“,”分割
+            ret_str += self.__db_file_parser(file, parser_type)
         return ret_str
 
     # 数据库 rollup 数据

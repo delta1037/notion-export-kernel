@@ -186,6 +186,10 @@ class BlockParser:
 
     def block_to_md(self, block_handle, new_id=None):
         block_list = block_handle["results"]
+        # 空内容不生成文件
+        if len(block_list) == 0:
+            return ""
+
         # 创建Markdown文件
         if new_id is not None:
             tmp_md_filename = self.tmp_dir + new_id.replace('-', '') + ".md"
