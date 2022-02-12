@@ -81,7 +81,7 @@ class BaseParser:
 
                 # 将页面保存，等待进一步递归操作
                 # 保存子页面信息
-                common_op.debug_log("child_page_parser add page id = " + page_id + "_" + text_str)
+                common_op.debug_log("child_page_parser add page id = " + page_id + "_" + text_str, level=NotionDump.DUMP_MODE_DEFAULT)
                 text_str = content_format.get_page_format_md(page_id + "_" + text_str, text_str,
                                                              export_child=self.export_child)
 
@@ -137,7 +137,7 @@ class BaseParser:
 
         # 解析文件的ID
         url_prefix = file_url[0:file_url.rfind("/")]
-        file_id = url_prefix[url_prefix.rfind("/")+1:].replace('-', '')
+        file_id = url_prefix[url_prefix.rfind("/") + 1:].replace('-', '')
         common_op.debug_log("file id is : " + file_id)
 
         if filename == "":
@@ -151,7 +151,7 @@ class BaseParser:
             page_name=filename
         )
         common_op.debug_log(
-            "file_parser add page id = " + file_id + "name : " + filename)
+            "file_parser add page id = " + file_id + "name : " + filename, level=NotionDump.DUMP_MODE_DEFAULT)
         common_op.debug_log(internal_var.PAGE_DIC)
         common_op.debug_log("#############")
         common_op.debug_log(self.child_pages)
@@ -202,24 +202,57 @@ class BaseParser:
             mention_plain = self.date_parser(mention_body)
         elif mention_body["type"] == "user":
             mention_plain = self.__user_parser(mention_body)
+        elif mention_body["type"] == "database":
+            database_id = mention_body["database"]["id"].replace('-', '')
+            key_id = database_id + "_mention"
+            common_op.debug_log("__mention_parser add database id = " + database_id)
+            # 获取页面的名字
+            database_name = block_handle["plain_text"]
+            common_op.add_new_child_page(
+                self.child_pages,
+                key_id=key_id,
+                link_id=database_id,
+                page_type="mention",
+                page_name=database_name
+            )
+            common_op.debug_log(
+                "file_parser add page id = " + key_id + "name : " + database_name, level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log(internal_var.PAGE_DIC)
+            common_op.debug_log("#############")
+            common_op.debug_log(self.child_pages)
+
+            if parser_type == NotionDump.PARSER_TYPE_MD:
+                mention_plain = content_format.get_page_format_md(key_id, database_name, export_child=self.export_child)
+            else:
+                mention_plain = database_name
         elif mention_body["type"] == "page":
             page_id = self.__page_parser(mention_body)
+            key_id = page_id + "_mention"
             common_op.debug_log("__mention_parser add page id = " + page_id)
             # 获取页面的名字
             page_name = block_handle["plain_text"]
-            if page_name is None:
-                # 提及到的其它页面因为没有别名，按照一个页面处理
-                common_op.add_new_child_page(self.child_pages, key_id=page_id)
-                page_name = page_id
-            else:
-                common_op.add_new_child_page(self.child_pages, key_id=page_id, page_name=page_name)
+
+            # 提及页面按照链接页面处理
+            common_op.add_new_child_page(
+                self.child_pages,
+                key_id=key_id,
+                link_id=page_id,
+                page_type="mention",
+                page_name=page_name
+            )
+            common_op.debug_log(
+                "file_parser add page id = " + key_id + "name : " + page_name, level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log(internal_var.PAGE_DIC)
+            common_op.debug_log("#############")
+            common_op.debug_log(self.child_pages)
 
             if parser_type == NotionDump.PARSER_TYPE_MD:
-                mention_plain = content_format.get_page_format_md(page_id, page_name, export_child=self.export_child)
+                mention_plain = content_format.get_page_format_md(key_id, page_name, export_child=self.export_child)
             else:
                 mention_plain = page_name
         else:
             common_op.debug_log("unknown mention type " + mention_body["type"], level=NotionDump.DUMP_MODE_DEFAULT)
+
         if parser_type == NotionDump.PARSER_TYPE_MD:
             # 解析annotations部分，为mention_plain添加格式
             return self.__annotations_parser(block_handle["annotations"],
@@ -247,7 +280,7 @@ class BaseParser:
         if title_ret != "":
             # 如果存在子Page就加入到待解析队列
             common_op.debug_log("title ret = " + title_ret)
-            common_op.debug_log("title_parser add page id = " + page_id)
+            common_op.debug_log("title_parser add page id = " + page_id, level=NotionDump.DUMP_MODE_DEFAULT)
             # 数据库里的都是子页面
             common_op.add_new_child_page(self.child_pages, key_id=page_id, page_name=title_ret)
 
@@ -633,7 +666,7 @@ class BaseParser:
             page_id = (block_handle["id"]).replace('-', '')
 
             # 保存子页面信息
-            common_op.debug_log("child_page_parser add page id = " + page_id)
+            common_op.debug_log("child_page_parser add page id = " + page_id, level=NotionDump.DUMP_MODE_DEFAULT)
             common_op.add_new_child_page(self.child_pages, key_id=page_id, page_name=page_body["title"])
 
             if parser_type == NotionDump.PARSER_TYPE_MD:
@@ -657,7 +690,7 @@ class BaseParser:
             page_name=block_handle["child_database"]["title"]
         )
         common_op.debug_log(
-            "child_database_parser add page id = " + child_db_id + "name : " + block_handle["child_database"]["title"])
+            "child_database_parser add page id = " + child_db_id + "name : " + block_handle["child_database"]["title"], level=NotionDump.DUMP_MODE_DEFAULT)
         common_op.debug_log(internal_var.PAGE_DIC)
         common_op.debug_log("#############")
         common_op.debug_log(self.child_pages)
@@ -702,7 +735,7 @@ class BaseParser:
         )
 
         common_op.debug_log(
-            "image_parser add page id = " + image_id + "name : " + image_name)
+            "image_parser add page id = " + image_id + "name : " + image_name, level=NotionDump.DUMP_MODE_DEFAULT)
         common_op.debug_log(internal_var.PAGE_DIC)
         common_op.debug_log("#############")
         common_op.debug_log(self.child_pages)
@@ -747,7 +780,7 @@ class BaseParser:
         )
 
         common_op.debug_log(
-            "file_parser add page id = " + file_id + "name : " + file_name)
+            "file_parser add page id = " + file_id + "name : " + file_name, level=NotionDump.DUMP_MODE_DEFAULT)
         common_op.debug_log(internal_var.PAGE_DIC)
         common_op.debug_log("#############")
         common_op.debug_log(self.child_pages)
@@ -780,3 +813,37 @@ class BaseParser:
             return content_format.get_file_format_md(bookmark_name, bookmark_url)
         else:
             return content_format.get_file_format_plain(bookmark_name, bookmark_url)
+
+    # Page link_to_page
+    def link_to_page_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
+        link_to_page_ret = ""
+        if block_handle["type"] != "link_to_page":
+            common_op.debug_log("link_to_page type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
+            return link_to_page_ret
+
+        link_page = block_handle["link_to_page"]
+        if link_page["type"] == "page_id":
+            page_id = link_page["page_id"].replace('-', '')
+            page_name = ""
+            key_id = page_id + "_link_page"
+            common_op.add_new_child_page(
+                self.child_pages,
+                key_id=key_id,
+                link_id=page_id,
+                page_type="page",
+                page_name=page_name
+            )
+            common_op.debug_log(
+                "link_to_page_parser add link_page key_id = " + key_id, level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log(internal_var.PAGE_DIC)
+            common_op.debug_log("#############")
+            common_op.debug_log(self.child_pages)
+            return content_format.get_page_format_md(
+                key_id,
+                page_name,
+                export_child=self.export_child
+            )
+        else:
+            common_op.debug_log("unknown type " + link_page["type"], level=NotionDump.DUMP_MODE_DEFAULT)
+        return link_to_page_ret

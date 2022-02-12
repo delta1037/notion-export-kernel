@@ -131,6 +131,9 @@ class BlockParser:
         elif block_type == "bookmark":
             # Page bookmark
             block_text = self.base_parser.bookmark_parser(block, self.parser_type)
+        elif block_type == "link_to_page":
+            # Page link_to_page
+            block_text = self.base_parser.link_to_page_parser(block, self.parser_type)
         else:
             common_op.debug_log("unknown page block properties type:" + block_type, level=NotionDump.DUMP_MODE_DEFAULT)
         return block_text

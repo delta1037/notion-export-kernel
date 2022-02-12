@@ -84,8 +84,11 @@ class MixParser:
                     tmp_filename = self.block_parser.block_to_md(page_json, new_id=child_id)
                     child_pages_dic = self.block_parser.get_child_pages_dic()
                 elif common_op.is_db(child_id):
+                    # retrieve_db = self.query_handle.retrieve_database(child_id)
+                    # print("########## ", "retrieve database " + child_id, retrieve_db)
                     # page里面搞一个Database的解析器
                     db_json = self.query_handle.query_database(child_id)
+
                     if db_json is None:
                         common_op.debug_log("get page error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
                         continue
