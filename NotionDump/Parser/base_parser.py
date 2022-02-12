@@ -212,7 +212,7 @@ class BaseParser:
                 self.child_pages,
                 key_id=key_id,
                 link_id=database_id,
-                page_type="mention",
+                page_type="database",
                 page_name=database_name
             )
             common_op.debug_log(
@@ -237,7 +237,7 @@ class BaseParser:
                 self.child_pages,
                 key_id=key_id,
                 link_id=page_id,
-                page_type="mention",
+                page_type="page",
                 page_name=page_name
             )
             common_op.debug_log(
