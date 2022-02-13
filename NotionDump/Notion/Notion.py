@@ -73,7 +73,7 @@ class NotionQuery:
                 common_op.debug_log(error)
                 common_op.debug_log("Block " + block_id + " response error", level=NotionDump.DUMP_MODE_DEFAULT)
         except Exception as e:
-            common_op.debug_log(e)
+            common_op.debug_log(e, level=NotionDump.DUMP_MODE_DEFAULT)
             common_op.debug_log("Block " + block_id + " Not found or no authority", level=NotionDump.DUMP_MODE_DEFAULT)
         return None
 
@@ -96,7 +96,7 @@ class NotionQuery:
             while query_ret["has_more"]:
                 query_post["start_cursor"] = next_cur
                 common_op.debug_log(query_post, level=NotionDump.DUMP_MODE_DEFAULT)
-                db_query_ret = self.client.blocks.children.list(
+                db_query_ret = self.client.databases.query(
                     **query_post
                 )
                 next_cur = db_query_ret["next_cursor"]
@@ -116,7 +116,7 @@ class NotionQuery:
                 common_op.debug_log(error)
                 common_op.debug_log("Database Query is invalid, id=" + database_id, level=NotionDump.DUMP_MODE_DEFAULT)
         except Exception as e:
-            common_op.debug_log(e)
+            common_op.debug_log(e, level=NotionDump.DUMP_MODE_DEFAULT)
             common_op.debug_log("Database Query Not found or no authority, id=" + database_id, level=NotionDump.DUMP_MODE_DEFAULT)
         return None
 
