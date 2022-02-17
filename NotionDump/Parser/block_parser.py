@@ -52,7 +52,11 @@ class BlockParser:
                 and block["type"] != "bulleted_list_item" \
                 and block["type"] != "toggle" \
                 and block["type"] != "table" \
-                and block["type"] != "table_row":
+                and block["type"] != "table_row"\
+                and block["type"] != "column_list" \
+                and block["type"] != "column" \
+                and block["type"] != "synced_block":
+            common_op.debug_log("[ISSUE] type " + block["type"] + " has no child", level=NotionDump.DUMP_MODE_DEFAULT)
             return None
 
         # 获取块id下面的内容并继续解析
@@ -135,7 +139,7 @@ class BlockParser:
             # Page link_to_page
             block_text = self.base_parser.link_to_page_parser(block, self.parser_type)
         else:
-            common_op.debug_log("unknown page block properties type:" + block_type, level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log("[ISSUE] unknown page block properties type:" + block_type, level=NotionDump.DUMP_MODE_DEFAULT)
         return block_text
 
     def parser_block_list(self, block_list, indent=0):
@@ -169,21 +173,38 @@ class BlockParser:
             if block_type != "table" and block_type != "table_row":
                 block_text += prefix
 
-            block_text += self.parser_block(
-                block=block,
-                list_index=list_index,
-                last_line_is_table=last_line_is_table
-            )
+            # 在外面解析列类型
+            if block_type == "column_list":
+                # 列类型的分解
+                column_list = self.__get_children_block_list(block)
+                if column_list is not None:
+                    for column in column_list:
+                        column_rows = self.__get_children_block_list(column)
+                        if column_rows is not None:
+                            block_text += self.parser_block_list(column_rows, indent)
+                        block_text += "\n"
+            elif block_type == "synced_block":
+                # 同步块解析其中的内容
+                synced_block_list = self.__get_children_block_list(block)
+                if synced_block_list is not None:
+                    block_text += self.parser_block_list(synced_block_list, indent)
+                block_text += "\n"
+            else:
+                block_text += self.parser_block(
+                    block=block,
+                    list_index=list_index,
+                    last_line_is_table=last_line_is_table
+                )
+
+                # 看改块下面有没有子块，如果有就继续解析
+                children_block_list = self.__get_children_block_list(block)
+                if children_block_list is not None:
+                    block_text += self.parser_block_list(children_block_list, indent + 1)
+                block_text += "\n"
 
             if block_type == "table_row":
                 # 第一行设置首行标志
                 last_line_is_table = False
-
-            # 看改块下面有没有子块，如果有就继续解析
-            children_block_list = self.__get_children_block_list(block)
-            if children_block_list is not None:
-                block_text += self.parser_block_list(children_block_list, indent + 1)
-            block_text += "\n"
 
         return block_text
 

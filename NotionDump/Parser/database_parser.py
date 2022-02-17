@@ -82,7 +82,7 @@ class DatabaseParser:
         elif item_block["type"] == "rollup":
             item_ret = self.base_parser.rollup_parser(item_block)
         else:
-            common_op.debug_log("unknown properties type:" + item_block["type"], level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log("[ISSUE] unknown properties type:" + item_block["type"], level=NotionDump.DUMP_MODE_DEFAULT)
 
         return item_ret
 
