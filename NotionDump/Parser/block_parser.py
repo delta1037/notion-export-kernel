@@ -222,6 +222,7 @@ class BlockParser:
 
         # 创建Markdown文件
         if new_id is not None:
+            self.base_parser.set_new_id(new_id)
             tmp_md_filename = self.tmp_dir + new_id.replace('-', '') + ".md"
         else:
             tmp_md_filename = self.tmp_dir + self.block_id + ".md"

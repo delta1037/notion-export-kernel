@@ -103,6 +103,7 @@ class DatabaseParser:
         if self.parser_type == NotionDump.PARSER_TYPE_MD:
             suffix = ".md"
         if new_id is not None:
+            self.base_parser.set_new_id(new_id)
             tmp_filename = self.tmp_dir + new_id.replace('-', '') + suffix
         else:
             tmp_filename = self.tmp_dir + self.database_id + suffix

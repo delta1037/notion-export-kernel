@@ -16,6 +16,9 @@ class BaseParser:
         # 设置变量存放子page 字典
         self.child_pages = {}
 
+    def set_new_id(self, parent_id):
+        self.base_id = parent_id
+
     # 获取子页面字典，只返回一次，离台概不负责
     def get_child_pages_dic(self):
         child_pages = copy.deepcopy(self.child_pages)
@@ -43,8 +46,9 @@ class BaseParser:
 
     def __text_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         if block_handle["type"] != "text":
-            common_op.debug_log("text type error! id=" + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
-            common_op.debug_log(block_handle, level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log(
+                "text type error! id=" + self.base_id + " not type " + block_handle["type"],
+                level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         text_str = block_handle["plain_text"]
         if text_str is None:
@@ -100,7 +104,9 @@ class BaseParser:
         elif block_handle["type"] == "mention":
             paragraph_ret = self.__mention_parser(block_handle, parser_type)
         else:
-            common_op.debug_log("text type error! parent_id= " + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log(
+                "text type " + block_handle["type"] + " error! parent_id= " + self.base_id,
+                level=NotionDump.DUMP_MODE_DEFAULT)
         return paragraph_ret
 
     def __text_list_parser(self, text_list, parser_type=NotionDump.PARSER_TYPE_PLAIN):
@@ -202,6 +208,8 @@ class BaseParser:
             mention_plain = self.date_parser(mention_body)
         elif mention_body["type"] == "user":
             mention_plain = self.__user_parser(mention_body)
+        elif mention_body["type"] == "link_preview" and "url" in mention_body["link_preview"].keys():
+            mention_plain = mention_body["link_preview"]["url"]
         elif mention_body["type"] == "database":
             database_id = mention_body["database"]["id"].replace('-', '')
             key_id = database_id + "_mention"
