@@ -4,6 +4,7 @@
 
 import os
 import urllib.request
+from urllib.error import URLError, HTTPError, ContentTooShortError
 
 import NotionDump
 from NotionDump.utils import common_op
@@ -24,11 +25,21 @@ class DownloadParser:
         if file_url == "":
             return ""
         # 文件名在最后一个/和?之间
-        filename = file_url[file_url.rfind('/')+1:file_url.find('?')]
+        filename = file_url[file_url.rfind('/') + 1:file_url.find('?')]
         file_suffix = filename[filename.find('.'):]
         # 使用后缀和id生成可识别的文件
         download_name = self.tmp_dir + new_id + file_suffix
         common_op.debug_log("download name " + download_name, level=NotionDump.DUMP_MODE_DEBUG)
         # 下载文件
-        urllib.request.urlretrieve(file_url, download_name)
+        try:
+            urllib.request.urlretrieve(file_url, download_name)
+        except urllib.error.HTTPError as e:
+            common_op.debug_log("download name " + download_name + " get error:", level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log(e, level=NotionDump.DUMP_MODE_DEFAULT)
+        except urllib.error.ContentTooShortError as e:
+            common_op.debug_log("download name " + download_name + " get error:", level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log(e, level=NotionDump.DUMP_MODE_DEFAULT)
+        except urllib.error.URLError as e:
+            common_op.debug_log("download name " + download_name + " get error:", level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log(e, level=NotionDump.DUMP_MODE_DEFAULT)
         return download_name
