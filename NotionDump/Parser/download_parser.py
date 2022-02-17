@@ -25,7 +25,10 @@ class DownloadParser:
         if file_url == "":
             return ""
         # 文件名在最后一个/和?之间
-        filename = file_url[file_url.rfind('/') + 1:file_url.find('?')]
+        if file_url.find('?') != -1:
+            filename = file_url[file_url.rfind('/') + 1:file_url.find('?')]
+        else:
+            filename = file_url[file_url.rfind('/') + 1:]
         file_suffix = filename[filename.find('.'):]
         # 使用后缀和id生成可识别的文件
         download_name = self.tmp_dir + new_id + file_suffix

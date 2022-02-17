@@ -60,7 +60,13 @@ class BlockParser:
             return None
 
         # 获取块id下面的内容并继续解析
-        block_list = self.query_handle.retrieve_block_children(block["id"])["results"]
+        if block["type"] == "synced_block" and block["synced_block"]["synced_from"] is not None:
+            block_id = block["synced_block"]["synced_from"]["block_id"]
+            common_op.debug_log("type synced_block " + block_id + " get child", level=NotionDump.DUMP_MODE_DEFAULT)
+        else:
+            block_id = block["id"]
+        block_list = self.query_handle.retrieve_block_children(block_id)["results"]
+
         # 如果没有获取到块，也返回空
         if len(block_list) == 0:
             return None
