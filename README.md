@@ -15,8 +15,6 @@ Main targets：
 - [x] Recursion Convert child Page in Database(Table) （All in all，all can Recursion Convert）
 - [x] Download image and files
 - [x] Convert link_to_page and bookmark
-- [ ] Export Notion Page as SQL
-- [ ] Export  SQL as markdown file
 
 ## Structure
 
@@ -46,7 +44,7 @@ graph TD
     F --> G[Base Parser]
 ```
 
-![项目架构图](https://github.com/delta1037/notion-dump-kernel/blob/main/img/parser_structure.png)
+
 
 ```mermaid
 graph TB
@@ -56,8 +54,6 @@ graph TB
     B --> H[Query]
     H --> G[Official API]
 ```
-
-![获取数据](https://github.com/delta1037/notion-dump-kernel/blob/main/img/get_data.png)
 
 
 

@@ -17,8 +17,6 @@
 - [x] 递归转换数据库中Title对应的Page页面（和上一条结合起来简而言之对于Page和Database Table之间的相互嵌套均可以递归转换）
 - [x] 下载文件和图片
 - [x] 转换链接页面和网页书签
-- [ ] 将Notion Page页面导出到数据库（SQL）
-- [ ] 将数据库（SQL）导出成md&CSV文件
 
 ## 二、项目结构
 
@@ -48,7 +46,7 @@ graph TD
     F --> G[Base Parser]
 ```
 
-![项目架构图](https://github.com/delta1037/notion-dump-kernel/blob/main/img/parser_structure.png)
+
 
 ```mermaid
 graph TB
@@ -59,7 +57,7 @@ graph TB
     H --> G[Official API]
 ```
 
-![获取数据](https://github.com/delta1037/notion-dump-kernel/blob/main/img/get_data.png)
+
 
 ## 三、使用方法
 
