@@ -27,7 +27,7 @@ REQUIRES = ["notion-client>=0.8.0"]
 
 setup(
     name="notion-dump-kernel",
-    version="0.1.6",
+    version="0.1.7",
     author="delta1037",
     author_email="geniusrabbit@qq.com",
     url="https://github.com/delta1037/notion-dump-kernel",
