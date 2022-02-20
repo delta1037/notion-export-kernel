@@ -28,6 +28,8 @@ class BaseParser:
     # 文本的格式生成
     @staticmethod
     def __annotations_parser(block_handle, str_plain):
+        if str_plain is None or str_plain == "":
+            return ""
         str_ret = str_plain
         if block_handle["code"]:
             str_ret = "`" + str_ret + "`"

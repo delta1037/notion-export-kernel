@@ -26,7 +26,6 @@ notoin-dump
 │  ├─Dump   # 对外接口
 │  ├─Notion # 与Notion通信统一封装接口
 │  ├─Parser # 实现的一些解析器
-│  ├─SQL    # 数据库部分，TODO
 │  └─utils  # 内部变量与杂项函数
 └─Tests 	# 测试代码
 ```
@@ -168,16 +167,6 @@ dump_output = dump_handle.dump_to_file()
 -   child_pages：包含的子页面或者子数据库
 -   inter_recursion：内部使用变量，无需关注
 -   inter_soft_page：内部使用变量，无需关注
-
-## 四、待完成
-
-### 4.1 导出到SQL数据库
-
-基本方案：数据库导出是将所有的page存储到一张表里，将导出的每一个CSV文件作为一张表存储
-
-我数据库不太行，只能想到这样的存储方法
-
-
 
 ## 五、注意
 

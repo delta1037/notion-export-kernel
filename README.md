@@ -24,7 +24,6 @@ notoin-dump
 │  ├─Dump   # External Interface
 │  ├─Notion # Unified encapsulation interface for communication with Notion
 │  ├─Parser # Some parser
-│  ├─SQL    # About SQL, TODO
 │  └─utils  # Internal variables and utils functions
 └─Tests 	# Test code
 ```
@@ -159,23 +158,13 @@ output dictionary variable like：
 
 -   key_id_1：key is id (block id/page id/database id) and it is the combination of link name and id in link page，the id is the tag to relocate link in page
 -   dumped：download status of the resource specifid by id
--   main_page：whether the page is the page specifid by input id (root)
+-   main_page：whether the page is the page specifid by dump_id (root)
 -   type：id type, database or page (page type contain page and block)（if id_1 is a link the type is the page type that the link linked）
 -   local_path：the location of export file, for subsequent operations
 -   page_name：page name (for subsequent relocation of page url)
 -   child_pages：subpage or database id this key_id contain
 -   inter_recursion：internal variable(NOT use)
 -   inter_soft_page：internal variable(NOT use)
-
-## TODO
-
-### 4.1 Export to SQL
-
-Plan: All page save in one table, and every csv file save as a table
-
-*My SQL skills is very weak*
-
-*If you can't understand my README, my English is also terrible (come from Google translate)*
 
 ## Attention
 
