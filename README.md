@@ -1,6 +1,6 @@
-# notion-dump-kernel
+# notion-export-kernel
 
-[中文](https://github.com/delta1037/notion-dump-kernel/blob/main/README_zh.md)
+[中文](https://github.com/delta1037/notion-export-kernel/blob/main/README_zh.md)
 
 ## Description
 
@@ -28,6 +28,8 @@ notoin-dump
 └─Tests 	# Test code
 ```
 
+#### Parser code structure
+
 ```mermaid
 graph TD
     A[Dump] -->B(Database)
@@ -43,12 +45,12 @@ graph TD
     F --> G[Base Parser]
 ```
 
-
+#### Query code structure
 
 ```mermaid
 graph TB
-    A[Dump] -->B(Database)
     A[Dump] -->C(Page/Block)
+    A[Dump] -->B(Database)
 	C --> H[Query]
     B --> H[Query]
     H --> G[Official API]
@@ -58,7 +60,7 @@ graph TB
 
 ## Usage
 
-### 3.0 install & import
+### 3.0 install & example
 
 **install `notion-dump-kernel`**
 
@@ -67,62 +69,65 @@ graph TB
 pip install notion-dump-kernel
 ```
 
-**import**
+**example**
 
 ```python
+# Example: export page
 import NotionDump
 from NotionDump.Dump.dump import Dump
 from NotionDump.Notion.Notion import NotionQuery
+from NotionDump.utils import common_op
+
+TOKEN_TEST = "secret_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+PAGE_MIX_ID = "43e7aa8ccfb0488eb18f8a453eab0177"
+# NotionDump.DUMP_MODE = NotionDump.DUMP_MODE_DEBUG
+
+def test_page_parser(query, export_child=False, db_parser_type=NotionDump.PARSER_TYPE_MD):
+    # init what you want to export
+    # Explain:
+    # 	dump_id: the ID which need to export (block, page or database)
+    # 	query_handle: Notion query handle for getting data from API (NOT the offical API handle)
+    # 	export_child_pages: whether export all nested pages(sub-page and link page)
+    # 	dump_type: the dump_id type [DUMP_TYPE_BLOCK/DUMP_TYPE_PAGE/DUMP_TYPE_DB_TABLE]
+    # 	db_parser_type: PARSER_TYPE_MD meas export database as markdown table; PARSER_TYPE_PLAIN means export database as CSV file
+    # 	page_parser_type: PARSER_TYPE_MD meas export page as markdown file; PARSER_TYPE_PLAIN means export page as txt
+    page_handle = Dump(
+        dump_id=PAGE_MIX_ID,
+        query_handle=query,
+        export_child_pages=export_child,
+        dump_type=NotionDump.DUMP_TYPE_PAGE,
+        db_parser_type=db_parser_type,
+        page_parser_type=NotionDump.PARSER_TYPE_MD
+    )
+    
+    # Returned variable , which contain all info about dumped files structure
+    # All parsered files will be save at .tmp/
+    page_detail_json = page_handle.dump_to_file()
+	
+    # all info about dumped files structure save as json file
+    print("json output to page_parser_result")
+    common_op.save_json_to_file(
+        handle=page_detail_json,
+        json_name=".tmp/page_parser_result.json"
+    )
+
+
+if __name__ == '__main__':
+    # We need a qurey handle for getting data from API
+    query_handle = NotionQuery(token=TOKEN_TEST)
+    if query_handle is None:
+        logging.exception("query handle init error")
+        exit(-1)
+
+    # export_child means export all nested pages(sub-page and link page)
+    test_page_parser(query_handle, True)
 ```
 
+### 3.1 Output
 
+All export files will be seen at `.tmp/` and the **page structure save at returned variable**, which contain all info about dumped files structure. 
 
-### 3.1 API
-
-```python
-# Get notion query handle
-query_handle = NotionQuery(
-    token=TOKEN_TEST,                  # Token
-    client_handle=None,                # Notion official API handle, default is None(use token is OK)
-    async_api=False                    # async, default is False
-)
-
-# Get dump handle 
-handle = Dump(
-    dump_id=ID,                        			# the ID which need to export (block, page or database)
-    query_handle=query,                			# Notion query handle (NOT the offical API handle)
-    export_child_pages=True, 		   			# Recursion export child page 
-    page_parser_type=NotionDump.PARSER_TYPE_MD, # Page export type
-    db_parser_type=NotionDump.PARSER_TYPE_PLAIN,# Database export type
-    dump_type=NotionDump.DUMP_TYPE_XXX 			# ID type, see the descriptions below
-)
-
-# dump type ( dump_type )
-DUMP_TYPE_BLOCK						   # Block type
-DUMP_TYPE_PAGE						   # Page type
-DUMP_TYPE_DB_TABLE                     # Database table type
-
-# Export type
-PARSER_TYPE_MD							# Markdown
-PARSER_TYPE_PLAIN						# plain text
-
-# Other
-# the varible itself shows all
-```
-
-
-
-### 3.2 Get output
-
-The result of dump save at a dictionary variable , which contain all info about dumped files. The explain of output shows below.
-
-```python
-# Get output
-dump_output = dump_handle.dump_to_file()
-# dump_handle is the return value of Dump(xxx)
-```
-
-output dictionary variable like：
+return variable (`page_detail_json`) will be like：
 
 ```json
 {
@@ -179,9 +184,9 @@ output dictionary variable like：
 
 [Notion Test Page](https://delta1037.notion.site/Notion-dump-ed0a3b0f57b34712bc6bafcbdb413d50)
 
-### 6.2 Notion dump client
+### 6.2 Notion export client
 
-which base on notion-dump-kernel, it is used to rebuild the structure of dumped files（dumped by notion-dump-kernel） and relocate the link in pages
+which base on notion-export-kernel, it is used to rebuild the structure of dumped files（dumped by notion-export-kernel） and relocate the link in pages
 
-[project Github](https://github.com/delta1037/notion-dump-local)
+[Github](https://github.com/delta1037/notion-export-client)
 

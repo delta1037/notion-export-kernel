@@ -1,4 +1,4 @@
-# notion-dump-kernel
+# notion-export-kernel
 
 
 
@@ -185,5 +185,5 @@ dump_output = dump_handle.dump_to_file()
 
 基于notion-dump-kernel做的一个对下载下来的页面重新组合文件结构，并对其中的链接部分进行重定位的项目
 
-[项目Github地址](https://github.com/delta1037/notion-dump-local)
+[项目Github地址](https://github.com/delta1037/notion-export-local)
 
