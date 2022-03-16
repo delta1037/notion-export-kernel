@@ -46,6 +46,9 @@ class BlockParser:
         if not block["has_children"]:
             return None
 
+        if block["type"] == 'child_page':
+            return None
+
         # 指定类型才递归
         if block["type"] != "to_do" \
                 and block["type"] != "numbered_list_item" \
@@ -55,7 +58,10 @@ class BlockParser:
                 and block["type"] != "table_row"\
                 and block["type"] != "column_list" \
                 and block["type"] != "column" \
-                and block["type"] != "synced_block":
+                and block["type"] != "synced_block" \
+                and block["type"] != "heading_1" \
+                and block["type"] != "heading_2" \
+                and block["type"] != "heading_3":
             common_op.debug_log("[ISSUE] type " + block["type"] + " has no child", level=NotionDump.DUMP_MODE_DEFAULT)
             return None
 
@@ -205,7 +211,12 @@ class BlockParser:
                 # 看改块下面有没有子块，如果有就继续解析
                 children_block_list = self.__get_children_block_list(block)
                 if children_block_list is not None:
-                    block_text += self.parser_block_list(children_block_list, indent + 1)
+                    if block_type == "heading_1" or block_type == "heading_2" or block_type == "heading_3":
+                        # 不需要收缩indent值
+                        block_text += "\n"
+                        block_text += self.parser_block_list(children_block_list, indent)
+                    else:
+                        block_text += self.parser_block_list(children_block_list, indent + 1)
                 block_text += "\n"
 
             if block_type == "table_row":
