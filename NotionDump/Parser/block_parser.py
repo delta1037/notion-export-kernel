@@ -49,7 +49,12 @@ class BlockParser:
         if block["type"] == 'child_page':
             return None
 
-        # 指定类型才递归
+        # 递归黑名单
+        if block["type"] == "template":
+            common_op.debug_log("type " + block["type"] + " has no child, ignore", level=NotionDump.DUMP_MODE_DEFAULT)
+            return None
+
+        # 指定类型才递归(白名单)
         if block["type"] != "to_do" \
                 and block["type"] != "numbered_list_item" \
                 and block["type"] != "bulleted_list_item" \
@@ -147,9 +152,20 @@ class BlockParser:
         elif block_type == "bookmark":
             # Page bookmark
             block_text = self.base_parser.bookmark_parser(block, self.parser_type)
+        elif block_type == "link_preview":
+            # Page bookmark
+            block_text = self.base_parser.link_preview_parser(block, self.parser_type)
         elif block_type == "link_to_page":
             # Page link_to_page
             block_text = self.base_parser.link_to_page_parser(block, self.parser_type)
+        elif block_type == "table_of_contents":
+            block_text = '[TOC]'
+        elif block_type == "template":
+            # 模板内容不解析
+            block_text = ''
+        elif block_type == "breadcrumb":
+            # 路径信息不解析（notion也不会返回）
+            block_text = ''
         else:
             common_op.debug_log("[ISSUE] unknown page block properties type:" + block_type, level=NotionDump.DUMP_MODE_DEFAULT)
         return block_text

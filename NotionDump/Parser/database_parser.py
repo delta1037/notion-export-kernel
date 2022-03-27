@@ -81,6 +81,14 @@ class DatabaseParser:
             item_ret = self.base_parser.files_parser(item_block, parser_type=self.parser_type)
         elif item_block["type"] == "rollup":
             item_ret = self.base_parser.rollup_parser(item_block)
+        elif item_block["type"] == "created_time":
+            item_ret = self.base_parser.created_time_parser(item_block)
+        elif item_block["type"] == "last_edited_time":
+            item_ret = self.base_parser.last_edited_time_parser(item_block)
+        elif item_block["type"] == "created_by":
+            item_ret = self.base_parser.created_by_parser(item_block)
+        elif item_block["type"] == "last_edited_by":
+            item_ret = self.base_parser.last_edited_by_parser(item_block)
         else:
             common_op.debug_log("[ISSUE] unknown properties type:" + item_block["type"], level=NotionDump.DUMP_MODE_DEFAULT)
 

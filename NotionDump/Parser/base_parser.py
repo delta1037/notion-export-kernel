@@ -455,6 +455,39 @@ class BaseParser:
         ret_str = rollup_block[rollup_block["type"]]
         return ret_str
 
+    # 数据库 created_time
+    def created_time_parser(self, block_handle):
+        if block_handle["type"] != "created_time":
+            common_op.debug_log("created_time type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
+            return ""
+        return block_handle["created_time"]
+
+    # 数据库 last_edited_time
+    def last_edited_time_parser(self, block_handle):
+        if block_handle["type"] != "last_edited_time":
+            common_op.debug_log(
+                "last_edited_time type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                level=NotionDump.DUMP_MODE_DEFAULT)
+            return ""
+        return block_handle["last_edited_time"]
+
+    def created_by_parser(self, block_handle):
+        if block_handle["type"] != "created_by":
+            common_op.debug_log("created_by type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
+            return ""
+        return self.__people_parser(block_handle["created_by"])
+
+    # 数据库 last_edited_by
+    def last_edited_by_parser(self, block_handle):
+        if block_handle["type"] != "last_edited_by":
+            common_op.debug_log(
+                "last_edited_by type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                level=NotionDump.DUMP_MODE_DEFAULT)
+            return ""
+        return self.__people_parser(block_handle["last_edited_by"])
+
     # Page paragraph
     #   mention
     #       date
@@ -823,6 +856,23 @@ class BaseParser:
             return content_format.get_file_format_md(bookmark_name, bookmark_url)
         else:
             return content_format.get_file_format_plain(bookmark_name, bookmark_url)
+
+    # Page link_preview
+    def link_preview_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
+        link_preview_ret = ""
+        if block_handle["type"] != "link_preview":
+            common_op.debug_log("link_preview type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
+            return link_preview_ret
+        link_preview_name = "LINK_PREVIEW"
+        link_preview_url = block_handle["link_preview"]["url"]
+
+        # bookmark 类型要返回一个链接占位符，供后续解析使用
+        if parser_type == NotionDump.PARSER_TYPE_MD:
+            # file转换成文件链接的形式
+            return content_format.get_file_format_md(link_preview_name, link_preview_url)
+        else:
+            return content_format.get_file_format_plain(link_preview_name, link_preview_url)
 
     # Page link_to_page
     def link_to_page_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
