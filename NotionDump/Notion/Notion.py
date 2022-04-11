@@ -2,7 +2,7 @@
 # Date: 2022/01/10
 # mail:geniusrabbit@qq.com
 import os
-from time import sleep
+from time import sleep, time
 
 from notion_client import Client, AsyncClient
 from notion_client import APIErrorCode, APIResponseError
@@ -32,10 +32,28 @@ class NotionQuery:
         if not os.path.exists(self.tmp_dir):
             os.mkdir(self.tmp_dir)
 
+        self.last_call_time = None
         self.friendly_time = internal_var.FRIENDLY_USE_API
 
     def __friendly_use_api(self):
-        sleep(self.friendly_time / 1000)
+        now_time = time()
+        # 睡眠时间 = 间隔时间 - 函数执行时间
+        if self.last_call_time is None:
+            func_exec_ms = self.friendly_time
+        else:
+            func_exec_ms = int(round(now_time * 1000)) - int(round(self.last_call_time * 1000))
+        sleep_ms = self.friendly_time - func_exec_ms
+        while sleep_ms > 0:
+            # 如果需要睡眠
+            if sleep_ms > 100:
+                sleep(0.1)
+            else:
+                sleep(sleep_ms / 1000.0)
+            # 按照每次100ms累计
+            common_op.debug_log("wait for server response..." + str(sleep_ms) + "ms", level=NotionDump.DUMP_MODE_DEFAULT)
+            sleep_ms -= 100
+        # 更新上次执行时间
+        self.last_call_time = time()
 
     # 获取该块下所有的子块
     def retrieve_block_children(self, block_id, page_size=100):

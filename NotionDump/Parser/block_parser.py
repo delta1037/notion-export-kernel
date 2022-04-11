@@ -66,7 +66,8 @@ class BlockParser:
                 and block["type"] != "synced_block" \
                 and block["type"] != "heading_1" \
                 and block["type"] != "heading_2" \
-                and block["type"] != "heading_3":
+                and block["type"] != "heading_3" \
+                and block["type"] != "paragraph":
             common_op.debug_log("[ISSUE] type " + block["type"] + " has no child", level=NotionDump.DUMP_MODE_DEFAULT)
             return None
 
@@ -82,6 +83,7 @@ class BlockParser:
         if len(block_list) == 0:
             return None
         # 返回获取到的块列表
+        common_op.debug_log("## retrieve block " + block_id, level=NotionDump.DUMP_MODE_DEFAULT)
         return block_list
 
     def parser_block(self, block, list_index, last_line_is_table):
@@ -227,8 +229,11 @@ class BlockParser:
                 # 看改块下面有没有子块，如果有就继续解析
                 children_block_list = self.__get_children_block_list(block)
                 if children_block_list is not None:
-                    if block_type == "heading_1" or block_type == "heading_2" or block_type == "heading_3":
-                        # 不需要收缩indent值
+                    if block_type == "heading_1" \
+                            or block_type == "heading_2" \
+                            or block_type == "heading_3" \
+                            or block_type == "paragraph":
+                        # 不需要加大indent值
                         block_text += "\n"
                         block_text += self.parser_block_list(children_block_list, indent)
                     else:

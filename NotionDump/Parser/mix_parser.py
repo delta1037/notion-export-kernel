@@ -70,7 +70,7 @@ class MixParser:
             # 判断页面是否已经操作过
             if common_op.is_page_recursion(child_id):
                 update_flag = True
-                common_op.debug_log("start child_page_id=", child_id)
+                common_op.debug_log("start child_page_id=" + child_id)
                 self.__test_show_child_page()
                 # 先更新页面的状态，无论获取成功或者失败都过去了，只获取一次
                 common_op.update_page_recursion(child_id, recursion=True)
