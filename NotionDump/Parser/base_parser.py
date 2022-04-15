@@ -290,7 +290,10 @@ class BaseParser:
         if title_ret != "":
             # 如果存在子Page就加入到待解析队列
             common_op.debug_log("title ret = " + title_ret)
-            common_op.debug_log("title_parser add page id = " + page_id, level=NotionDump.DUMP_MODE_DEFAULT)
+            if parser_type != NotionDump.PARSER_TYPE_PLAIN:
+                common_op.debug_log("title_parser add page id = " + page_id, level=NotionDump.DUMP_MODE_DEFAULT)
+            else:
+                common_op.debug_log("title_parser add page id = " + page_id)
             # 数据库里的都是子页面
             common_op.add_new_child_page(self.child_pages, key_id=page_id, page_name=title_ret)
 

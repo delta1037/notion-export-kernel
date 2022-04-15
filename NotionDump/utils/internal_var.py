@@ -3,7 +3,8 @@
 # mail:geniusrabbit@qq.com
 
 # ms
-FRIENDLY_USE_API = 350
+FRIENDLY_USE_API = 400
+FRIENDLY_DOWNLOAD = 1000
 
 # 导出页面结构
 PAGE_DIC = {}
