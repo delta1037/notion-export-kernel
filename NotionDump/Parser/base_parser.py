@@ -40,8 +40,11 @@ class BaseParser:
         if block_handle["italic"]:
             str_ret = "*" + str_ret + "*"
         if block_handle["color"] != "default":
-            # 添加颜色
-            str_ret = "<font color=" + block_handle["color"] + ">" + str_ret + "</font>"
+            # 添加颜色，区分背景色和前景色
+            if block_handle["color"].find("_background") != -1:
+                str_ret = "<span style=\"background-color:" + block_handle["color"][0:block_handle["color"].rfind('_')] + "\">" + str_ret + "</span>"
+            else:
+                str_ret = "<font color=" + block_handle["color"] + ">" + str_ret + "</font>"
         if block_handle["strikethrough"]:
             str_ret = "~~" + str_ret + "~~"
         return str_ret

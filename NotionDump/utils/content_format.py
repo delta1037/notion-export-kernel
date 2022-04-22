@@ -69,4 +69,4 @@ def get_equation_inline(equation):
 
 # 块级公式格式
 def get_equation_block(equation):
-    return "<center>$$ " + equation + " $$</center>"
+    return "$$ " + equation + " $$"
