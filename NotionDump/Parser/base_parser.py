@@ -507,7 +507,7 @@ class BaseParser:
             common_op.debug_log("paragraph type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return paragraph_ret
-        return self.__text_list_parser(block_handle["paragraph"]["text"], parser_type)
+        return self.__text_list_parser(block_handle["paragraph"]["rich_text"], parser_type)
 
     # Page heading_1
     def heading_1_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
@@ -516,7 +516,7 @@ class BaseParser:
             common_op.debug_log("heading_1 type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return heading_1_ret
-        heading_1_ret = self.__text_list_parser(block_handle["heading_1"]["text"], parser_type)
+        heading_1_ret = self.__text_list_parser(block_handle["heading_1"]["rich_text"], parser_type)
         if parser_type == NotionDump.PARSER_TYPE_MD:
             return "# " + heading_1_ret
         else:
@@ -529,7 +529,7 @@ class BaseParser:
             common_op.debug_log("heading_2 type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return heading_2_ret
-        heading_2_ret = self.__text_list_parser(block_handle["heading_2"]["text"], parser_type)
+        heading_2_ret = self.__text_list_parser(block_handle["heading_2"]["rich_text"], parser_type)
 
         if parser_type == NotionDump.PARSER_TYPE_MD:
             return "## " + heading_2_ret
@@ -543,7 +543,7 @@ class BaseParser:
             common_op.debug_log("heading_3 type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return heading_3_ret
-        heading_3_ret = self.__text_list_parser(block_handle["heading_3"]["text"], parser_type)
+        heading_3_ret = self.__text_list_parser(block_handle["heading_3"]["rich_text"], parser_type)
 
         if parser_type == NotionDump.PARSER_TYPE_MD:
             return "### " + heading_3_ret
@@ -557,7 +557,7 @@ class BaseParser:
             common_op.debug_log("to_do type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return to_do_ret
-        to_do_ret = self.__text_list_parser(block_handle["to_do"]["text"], parser_type)
+        to_do_ret = self.__text_list_parser(block_handle["to_do"]["rich_text"], parser_type)
 
         if parser_type == NotionDump.PARSER_TYPE_MD:
             if block_handle["to_do"]["checked"]:
@@ -575,7 +575,7 @@ class BaseParser:
                 "bulleted_list_item type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                 level=NotionDump.DUMP_MODE_DEFAULT)
             return bulleted_list_item_ret
-        bulleted_list_item_ret = self.__text_list_parser(block_handle["bulleted_list_item"]["text"], parser_type)
+        bulleted_list_item_ret = self.__text_list_parser(block_handle["bulleted_list_item"]["rich_text"], parser_type)
 
         if parser_type == NotionDump.PARSER_TYPE_MD:
             return "- " + bulleted_list_item_ret
@@ -590,7 +590,7 @@ class BaseParser:
                 "numbered_list_item type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                 level=NotionDump.DUMP_MODE_DEFAULT)
             return numbered_list_item_ret
-        numbered_list_item_ret = self.__text_list_parser(block_handle["numbered_list_item"]["text"], parser_type)
+        numbered_list_item_ret = self.__text_list_parser(block_handle["numbered_list_item"]["rich_text"], parser_type)
 
         if parser_type == NotionDump.PARSER_TYPE_MD:
             return str(list_index) + ". " + numbered_list_item_ret
@@ -604,7 +604,7 @@ class BaseParser:
             common_op.debug_log("toggle type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return toggle_ret
-        toggle_ret = self.__text_list_parser(block_handle["toggle"]["text"], parser_type)
+        toggle_ret = self.__text_list_parser(block_handle["toggle"]["rich_text"], parser_type)
 
         if parser_type == NotionDump.PARSER_TYPE_MD:
             return "- " + toggle_ret
@@ -628,7 +628,7 @@ class BaseParser:
             common_op.debug_log("callout type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return callout_ret
-        callout_ret = self.__text_list_parser(block_handle["callout"]["text"], parser_type)
+        callout_ret = self.__text_list_parser(block_handle["callout"]["rich_text"], parser_type)
 
         if parser_type == NotionDump.PARSER_TYPE_MD:
             # 这里是否每一行都操作
@@ -643,7 +643,7 @@ class BaseParser:
             common_op.debug_log("code type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return code_ret
-        code_ret = self.__text_list_parser(block_handle["code"]["text"], parser_type)
+        code_ret = self.__text_list_parser(block_handle["code"]["rich_text"], parser_type)
 
         code_type = block_handle["code"]["language"]
         if code_type is None:
@@ -662,7 +662,7 @@ class BaseParser:
             common_op.debug_log("quote type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return quote_ret
-        quote_ret = self.__text_list_parser(block_handle["quote"]["text"], parser_type)
+        quote_ret = self.__text_list_parser(block_handle["quote"]["rich_text"], parser_type)
 
         if parser_type == NotionDump.PARSER_TYPE_MD:
             # 这里是否每一行都操作

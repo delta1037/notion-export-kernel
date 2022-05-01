@@ -51,7 +51,7 @@ class Page:
     def dump_to_file(self, file_name=None):
         page_json = self.query_handle.retrieve_block_children(self.page_id)
         if page_json is None:
-            common_op.debug_log("query database get nothing, id=" + self.page_id,
+            common_op.debug_log("query page get nothing, id=" + self.page_id,
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return False
         # 解析到临时文件中
