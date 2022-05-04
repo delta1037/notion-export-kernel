@@ -56,6 +56,8 @@ class DownloadParser:
         file_suffix = filename[filename.find('.'):]
         # 使用后缀和id生成可识别的文件
         download_name = self.tmp_dir + new_id + file_suffix
+        if os.path.exists(download_name):
+            common_op.debug_log("[WARN] file " + download_name + " was covered", level=NotionDump.DUMP_MODE_DEFAULT)
         common_op.debug_log("download name " + download_name, level=NotionDump.DUMP_MODE_DEBUG)
         # 下载文件
         try:

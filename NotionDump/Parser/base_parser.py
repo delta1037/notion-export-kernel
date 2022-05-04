@@ -815,8 +815,13 @@ class BaseParser:
             if "url" in block_handle[block_type][file_type].keys():
                 file_url = block_handle[block_type][file_type]["url"]
         if file_url == "":
-            common_op.debug_log("unknown block type" + block_handle[block_type]["type"],
+            common_op.debug_log("unknown block type" + block_handle[block_type]["type"] + " with null url",
                                 level=NotionDump.DUMP_MODE_DEFAULT)
+            return ""
+        # 如果caption中没有文件名，尝试从url中分离
+        if file_name == "":
+            file_url_basic = file_url[0:file_url.rfind('?')]
+            file_name = file_url_basic[file_url_basic.rfind('/')+1:]
         if file_name == "":
             # 如果文件没有名字使用id作为默认名字
             file_name = file_id
@@ -829,7 +834,7 @@ class BaseParser:
         )
 
         common_op.debug_log(
-            "file_parser add page id = " + file_id + "name : " + file_name, level=NotionDump.DUMP_MODE_DEFAULT)
+            "file_parser add page id = " + file_id + " name : " + file_name, level=NotionDump.DUMP_MODE_DEFAULT)
         common_op.debug_log(internal_var.PAGE_DIC)
         common_op.debug_log("#############")
         common_op.debug_log(self.child_pages)
