@@ -58,9 +58,9 @@ class DatabaseParser:
         if item_block["type"] == "title":  # title
             item_ret = self.base_parser.title_parser(item_block, page_id, parser_type=self.parser_type)
         elif item_block["type"] == "multi_select":  # multi_select
-            item_ret = self.base_parser.multi_select_parser(item_block)
+            item_ret = self.base_parser.multi_select_parser(item_block, parser_type=self.parser_type)
         elif item_block["type"] == "select":
-            item_ret = self.base_parser.select_parser(item_block)
+            item_ret = self.base_parser.select_parser(item_block, parser_type=self.parser_type)
         elif item_block["type"] == "rich_text":
             item_ret = self.base_parser.rich_text_parser(item_block, parser_type=self.parser_type)
         elif item_block["type"] == "url":

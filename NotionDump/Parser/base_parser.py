@@ -6,6 +6,8 @@ import copy
 import NotionDump
 from NotionDump.utils import content_format, common_op
 from NotionDump.utils import internal_var
+from urllib.parse import unquote
+from NotionDump.utils.content_format import color_transformer
 
 
 class BaseParser:
@@ -42,9 +44,10 @@ class BaseParser:
         if block_handle["color"] != "default":
             # 添加颜色，区分背景色和前景色
             if block_handle["color"].find("_background") != -1:
-                str_ret = "<span style=\"background-color:" + block_handle["color"][0:block_handle["color"].rfind('_')] + "\">" + str_ret + "</span>"
+                bg_color = block_handle["color"][0:block_handle["color"].rfind('_')]
+                str_ret = "<span style=\"background-color:" + color_transformer(bg_color, background=True) + "\">" + str_ret + "</span>"
             else:
-                str_ret = "<font color=" + block_handle["color"] + ">" + str_ret + "</font>"
+                str_ret = "<font color=\"" + color_transformer(block_handle["color"], background=False) + "\">" + str_ret + "</font>"
         if block_handle["strikethrough"]:
             str_ret = "~~" + str_ret + "~~"
         return str_ret
@@ -313,7 +316,7 @@ class BaseParser:
         return self.__text_list_parser(block_handle["rich_text"], parser_type)
 
     # 数据库 multi_select
-    def multi_select_parser(self, block_handle):
+    def multi_select_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         if block_handle["type"] != "multi_select":
             common_op.debug_log("multi_select type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
@@ -325,11 +328,16 @@ class BaseParser:
         for multi_select in multi_select_list:
             if ret_str != "":
                 ret_str += ","  # 多个选项之间用“,”分割
-            ret_str += multi_select["name"]
+            if parser_type == NotionDump.PARSER_TYPE_MD:
+                ret_str += "<span style=\"background-color:" \
+                           + color_transformer(multi_select["color"], background=True) \
+                           + "\">" + multi_select["name"] + "</span>"
+            else:
+                ret_str += multi_select["name"]
         return ret_str
 
     # 数据库 select
-    def select_parser(self, block_handle):
+    def select_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
         if block_handle["type"] != "select":
             common_op.debug_log("select type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
@@ -338,7 +346,12 @@ class BaseParser:
         ret_str = ""
         if select is None:
             return ret_str
-        ret_str = select["name"]
+        if parser_type == NotionDump.PARSER_TYPE_MD:
+            ret_str = "<span style=\"background-color:" \
+                + color_transformer(select["color"], background=True) \
+                + "\">" + select["name"] + "</span>"
+        else:
+            ret_str = select["name"]
         return ret_str
 
     # 数据库 url
@@ -663,6 +676,14 @@ class BaseParser:
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return quote_ret
         quote_ret = self.__text_list_parser(block_handle["quote"]["rich_text"], parser_type)
+        # 最外层颜色
+        if block_handle["quote"]["color"] != "default":
+            # 添加颜色，区分背景色和前景色
+            if block_handle["quote"]["color"].find("_background") != -1:
+                bg_color = block_handle["quote"]["color"][0:block_handle["quote"]["color"].rfind('_')]
+                quote_ret = "<span style=\"background-color:" + color_transformer(bg_color, background=True) + "\">" + quote_ret + "</span>"
+            else:
+                quote_ret = "<font color=\"" + color_transformer(block_handle["quote"]["color"], background=False) + "\">" + quote_ret + "</font>"
 
         if parser_type == NotionDump.PARSER_TYPE_MD:
             # 这里是否每一行都操作
@@ -822,6 +843,8 @@ class BaseParser:
         if file_name == "":
             file_url_basic = file_url[0:file_url.rfind('?')]
             file_name = file_url_basic[file_url_basic.rfind('/')+1:]
+            # url中分离的内容需要转码
+            file_name = unquote(file_name, 'utf-8')
         if file_name == "":
             # 如果文件没有名字使用id作为默认名字
             file_name = file_id

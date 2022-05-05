@@ -70,3 +70,52 @@ def get_equation_inline(equation):
 # 块级公式格式
 def get_equation_block(equation):
     return "$$ " + equation + " $$"
+
+
+def color_transformer(input_color, background=False):
+    if input_color == "gray":
+        if background:
+            return "#F1F1EF"
+        else:
+            return "#787774"
+    if input_color == "brown":
+        if background:
+            return "#F4EEEE"
+        else:
+            return "#9F6B53"
+    if input_color == "orange":
+        if background:
+            return "#FBECDD"
+        else:
+            return "#D9730D"
+    if input_color == "yellow":
+        if background:
+            return "#FBF3DB"
+        else:
+            return "#CB912F"
+    if input_color == "green":
+        if background:
+            return "#EDF3EC"
+        else:
+            return "#448361"
+    if input_color == "blue":
+        if background:
+            return "#E7F3F8"
+        else:
+            return "#337EA9"
+    if input_color == "purple":
+        if background:
+            return "#F4F0F7CC"
+        else:
+            return "#9065B0"
+    if input_color == "pink":
+        if background:
+            return "#F9EEF3CC"
+        else:
+            return "#C14C8A"
+    if input_color == "red":
+        if background:
+            return "#FDEBEC"
+        else:
+            return "#D44C47"
+    return input_color
