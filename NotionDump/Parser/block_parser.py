@@ -67,7 +67,9 @@ class BlockParser:
                 and block["type"] != "heading_1" \
                 and block["type"] != "heading_2" \
                 and block["type"] != "heading_3" \
-                and block["type"] != "paragraph":
+                and block["type"] != "paragraph" \
+                and block["type"] != "quote" \
+                and block["type"] != "callout":
             common_op.debug_log("[ISSUE] type " + block["type"] + " has no child", level=NotionDump.DUMP_MODE_DEFAULT)
             return None
 
@@ -172,7 +174,7 @@ class BlockParser:
             common_op.debug_log("[ISSUE] unknown page block properties type:" + block_type, level=NotionDump.DUMP_MODE_DEFAULT)
         return block_text
 
-    def parser_block_list(self, block_list, indent=0):
+    def parser_block_list(self, block_list, indent=0, line_div="\n"):
         prefix = ""
         p_index = 0
         while p_index < indent:
@@ -182,7 +184,7 @@ class BlockParser:
         # 如果有内容先加个换行再说
         block_text = ""
         if indent != 0:
-            block_text = "\n"
+            block_text = line_div
 
         last_type = "to_do"  # 初始化不换行
         list_index = 1
@@ -194,7 +196,7 @@ class BlockParser:
             # 遍历block，解析内容，填充到md文件中
             block_type = block["type"]
             if common_op.parser_newline(last_type, block_type) and block_text != "":
-                block_text += "\n"
+                block_text += line_div
             if last_type == "numbered_list_item":
                 list_index = list_index + 1
             else:
@@ -228,14 +230,19 @@ class BlockParser:
 
                 # 看改块下面有没有子块，如果有就继续解析
                 children_block_list = self.__get_children_block_list(block)
+                t_line_div = "\n"
+                if block_type == "quote" or block_type == "callout":
+                    t_line_div = "<br>"
                 if children_block_list is not None:
                     if block_type == "heading_1" \
                             or block_type == "heading_2" \
                             or block_type == "heading_3" \
-                            or block_type == "paragraph":
+                            or block_type == "paragraph" \
+                            or block_type == "quote" \
+                            or block_type == "callout":
                         # 不需要加大indent值
-                        block_text += "\n"
-                        block_text += self.parser_block_list(children_block_list, indent)
+                        block_text += t_line_div
+                        block_text += self.parser_block_list(children_block_list, indent, line_div=t_line_div)
                     else:
                         block_text += self.parser_block_list(children_block_list, indent + 1)
                 block_text += "\n"
