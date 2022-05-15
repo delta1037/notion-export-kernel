@@ -7,7 +7,7 @@ import NotionDump
 from NotionDump.utils import content_format, common_op
 from NotionDump.utils import internal_var
 from urllib.parse import unquote
-from NotionDump.utils.content_format import color_transformer
+from NotionDump.utils.content_format import color_transformer, color_transformer_db
 
 
 class BaseParser:
@@ -112,7 +112,7 @@ class BaseParser:
         elif block_handle["type"] == "equation":
             paragraph_ret = self.__equation_inline_parser(block_handle)
         elif block_handle["type"] == "mention":
-            paragraph_ret = self.__mention_parser(block_handle, parser_type)
+            paragraph_ret = self.__mention_parser(block_handle, parser_type, is_db=is_db)
         else:
             common_op.debug_log(
                 "text type " + block_handle["type"] + " error! parent_id= " + self.base_id,
@@ -211,7 +211,7 @@ class BaseParser:
         return page_body["id"].replace('-', '')
 
     # 提及到其它页面，日期，用户
-    def __mention_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
+    def __mention_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN, is_db=False):
         if block_handle["type"] != "mention":
             common_op.debug_log("mention type error! parent_id= " + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
@@ -339,9 +339,9 @@ class BaseParser:
         for multi_select in multi_select_list:
             if ret_str != "":
                 ret_str += ","  # 多个选项之间用“,”分割
-            if parser_type == NotionDump.PARSER_TYPE_MD:
+            if parser_type == NotionDump.PARSER_TYPE_MD and multi_select["color"] != "default":
                 ret_str += "<span style=\"background-color:" \
-                           + color_transformer(multi_select["color"], background=True) \
+                           + color_transformer_db(multi_select["color"]) \
                            + "\">" + multi_select["name"] + "</span>"
             else:
                 ret_str += multi_select["name"]
@@ -357,9 +357,9 @@ class BaseParser:
         ret_str = ""
         if select is None:
             return ret_str
-        if parser_type == NotionDump.PARSER_TYPE_MD:
+        if parser_type == NotionDump.PARSER_TYPE_MD and select["color"] != "default":
             ret_str = "<span style=\"background-color:" \
-                + color_transformer(select["color"], background=True) \
+                + color_transformer_db(select["color"]) \
                 + "\">" + select["name"] + "</span>"
         else:
             ret_str = select["name"]

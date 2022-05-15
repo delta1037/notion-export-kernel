@@ -119,3 +119,27 @@ def color_transformer(input_color, background=False):
         else:
             return "#D44C47"
     return input_color
+
+
+def color_transformer_db(input_color):
+    if input_color == "light_gray":
+        return "#E3E2E080"
+    if input_color == "gray":
+        return "#E3E2E0"
+    if input_color == "brown":
+        return "#EEE0DA"
+    if input_color == "orange":
+        return "#FADEC9"
+    if input_color == "yellow":
+        return "#FDECC8"
+    if input_color == "green":
+        return "#DBEDDB"
+    if input_color == "blue":
+        return "#D3E5EF"
+    if input_color == "purple":
+        return "#E8DEEE"
+    if input_color == "pink":
+        return "#F5E0E9"
+    if input_color == "red":
+        return "#FFE2DD"
+    return input_color
