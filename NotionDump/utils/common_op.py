@@ -62,7 +62,7 @@ def update_child_pages(child_pages, parent_id):
         # 包括占位的类型，如果总页面表里不存在都放进去
         if child_page_id not in internal_var.PAGE_DIC:
             # 如果现有的列表里没有这一条,则新加一条
-            debug_log("CREATE child page " + child_page_id + "from child_pages", level=NotionDump.DUMP_MODE_DEFAULT)
+            debug_log("CREATE child page " + child_page_id + " from child_pages", level=NotionDump.DUMP_MODE_DEFAULT)
             internal_var.PAGE_DIC[child_page_id] = copy.deepcopy(child_pages[child_page_id])
 
         # 如果该页面是占位的，则不加到父页面表里
@@ -78,7 +78,7 @@ def update_child_pages(child_pages, parent_id):
 # 添加一个新的子页
 # 链接的key格式是 id_链接名
 # 子页面的key格式是id
-def add_new_child_page(child_pages, key_id, link_id=None, page_name=None, page_type=None, inter_soft_page=False):
+def add_new_child_page(child_pages, key_id, link_id=None, link_src=None, page_name=None, page_type=None, inter_soft_page=False):
     # 判断id是否存在，存在就不添加了，防止覆盖
     debug_log("add new child key:" + key_id)
     # id 存在并且不是软连接创建的，就不添加了（硬链接先于软连接）
@@ -88,16 +88,18 @@ def add_new_child_page(child_pages, key_id, link_id=None, page_name=None, page_t
     # 如果不存在或者上一个是软连接创建的，就重新赋值
     child_pages[key_id] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
     child_pages[key_id]["inter_soft_page"] = inter_soft_page
-    if link_id is not None and page_type != "image" and page_type != "file":
+    if link_id is not None:
         # 如果是软链接，递归看一下对应的子页面在不在,如果不在就先占个坑(忽略file和image类型)
         # inter_soft_page 表明该项是软连接创建的
         debug_log("SOFT_PAGE key_id " + key_id + " link_id " + link_id + ", create a null page with link_id",
                   level=NotionDump.DUMP_MODE_DEFAULT)
-        add_new_child_page(child_pages, key_id=link_id, page_type=page_type, inter_soft_page=True)
+        add_new_child_page(child_pages, key_id=link_id, link_src=link_src, page_type=page_type, inter_soft_page=True)
     if page_name is not None:
         child_pages[key_id]["page_name"] = page_name
     if link_id is not None:
         child_pages[key_id]["link_id"] = link_id
+    if link_src is not None:
+        child_pages[key_id]["link_src"] = link_src
     if page_type is not None:
         child_pages[key_id]["type"] = page_type
 
@@ -182,10 +184,17 @@ def parser_newline(last_type, now_type):
 def debug_log(debug_str, level=NotionDump.DUMP_MODE_DEBUG):
     if NotionDump.DUMP_MODE == NotionDump.DUMP_MODE_DEBUG:
         # debug 模式啥都打印出来
-        print("[NotionDump]", end='')
+        print("[NotionDump] ", end='')
         print(debug_str)
+
+        # debug内容写入到文件
+        log_fd = open("notion-export-kernel-debug.log", "a+", encoding='utf-8')
+        log_fd.write(str(debug_str) + "\n")
+        log_fd.flush()
+        log_fd.close()
+
     elif NotionDump.DUMP_MODE == NotionDump.DUMP_MODE_DEFAULT and level == NotionDump.DUMP_MODE_DEFAULT:
         # 默认模式 对 level进行过滤
-        print("[NotionDump]", end='')
+        print("[NotionDump] ", end='')
         print(debug_str)
     # 静默模式什么都不输出

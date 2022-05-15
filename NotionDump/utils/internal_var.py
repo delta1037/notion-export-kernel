@@ -17,6 +17,7 @@ CHILD_PAGE_TEMP = {
     "local_path": "",
     "page_name": "",
     "link_id": "",
+    "link_src": "",
     "child_pages": [],
     "inter_recursion": False,
     "inter_soft_page": False

@@ -69,7 +69,7 @@ class BaseParser:
                 # 网络链接，直接一步到位
                 text_str = content_format.get_url_format(text_url, text_str)
             else:
-                # Page类型，等待重定位
+                # Page或者数据库类型，等待重定位
                 if text_url.find("=") != -1:
                     page_id = text_url[text_url.rfind("/") + 1:text_url.rfind("?")]
                     common_op.debug_log("### page id " + page_id + " is database")
@@ -77,6 +77,7 @@ class BaseParser:
                         self.child_pages,
                         key_id=page_id + "_" + text_str,
                         link_id=page_id,
+                        link_src=text_url,
                         page_type="database",
                         page_name=text_str
                     )
@@ -87,6 +88,7 @@ class BaseParser:
                         self.child_pages,
                         key_id=page_id + "_" + text_str,
                         link_id=page_id,
+                        link_src=text_url,
                         page_type="page",
                         page_name=text_str
                     )
@@ -103,7 +105,7 @@ class BaseParser:
         else:
             return text_str
 
-    def __text_block_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
+    def __text_block_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN, is_db=False):
         paragraph_ret = ""
         if block_handle["type"] == "text":
             paragraph_ret = self.__text_parser(block_handle, parser_type)
@@ -117,12 +119,16 @@ class BaseParser:
                 level=NotionDump.DUMP_MODE_DEFAULT)
         return paragraph_ret
 
-    def __text_list_parser(self, text_list, parser_type=NotionDump.PARSER_TYPE_PLAIN):
+    def __text_list_parser(self, text_list, parser_type=NotionDump.PARSER_TYPE_PLAIN, is_db=False):
         plain_text = ""
         if text_list is not None:
             for text_block in text_list:
-                plain_text += self.__text_block_parser(text_block, parser_type)
-        return plain_text
+                plain_text += self.__text_block_parser(text_block, parser_type, is_db=is_db)
+        if is_db:
+            # 数据库内容特殊字符校对
+            return plain_text.replace("|", "\\|")
+        else:
+            return plain_text
 
     # TODO : people只获取了名字和ID，后续可以做深度解析用户相关内容
     def __people_parser(self, block_handle):
@@ -160,12 +166,12 @@ class BaseParser:
         common_op.add_new_child_page(
             self.child_pages,
             key_id=file_id,
-            link_id=file_url,
+            link_src=file_url,
             page_type="file",
             page_name=filename
         )
         common_op.debug_log(
-            "file_parser add page id = " + file_id + "name : " + filename, level=NotionDump.DUMP_MODE_DEFAULT)
+            "file_parser add page id = " + file_id + " name : " + filename, level=NotionDump.DUMP_MODE_DEFAULT)
         common_op.debug_log(internal_var.PAGE_DIC)
         common_op.debug_log("#############")
         common_op.debug_log(self.child_pages)
@@ -224,15 +230,18 @@ class BaseParser:
             common_op.debug_log("__mention_parser add database id = " + database_id)
             # 获取页面的名字
             database_name = block_handle["plain_text"]
+            database_link = block_handle["href"]
+
             common_op.add_new_child_page(
                 self.child_pages,
                 key_id=key_id,
                 link_id=database_id,
+                link_src=database_link,
                 page_type="database",
                 page_name=database_name
             )
             common_op.debug_log(
-                "file_parser add page id = " + key_id + "name : " + database_name, level=NotionDump.DUMP_MODE_DEFAULT)
+                "file_parser add page id = " + key_id + " name : " + database_name, level=NotionDump.DUMP_MODE_DEFAULT)
             common_op.debug_log(internal_var.PAGE_DIC)
             common_op.debug_log("#############")
             common_op.debug_log(self.child_pages)
@@ -247,17 +256,19 @@ class BaseParser:
             common_op.debug_log("__mention_parser add page id = " + page_id)
             # 获取页面的名字
             page_name = block_handle["plain_text"]
+            page_link = block_handle["href"]
 
             # 提及页面按照链接页面处理
             common_op.add_new_child_page(
                 self.child_pages,
                 key_id=key_id,
                 link_id=page_id,
+                link_src=page_link,
                 page_type="page",
                 page_name=page_name
             )
             common_op.debug_log(
-                "file_parser add page id = " + key_id + "name : " + page_name, level=NotionDump.DUMP_MODE_DEFAULT)
+                "file_parser add page id = " + key_id + " name : " + page_name, level=NotionDump.DUMP_MODE_DEFAULT)
             common_op.debug_log(internal_var.PAGE_DIC)
             common_op.debug_log("#############")
             common_op.debug_log(self.child_pages)
@@ -292,20 +303,20 @@ class BaseParser:
             common_op.debug_log("title type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
-        title_ret = self.__text_list_parser(block_handle["title"], parser_type)
-        if title_ret != "":
+        db_page_title = self.__text_list_parser(block_handle["title"], parser_type, is_db=True)
+        if db_page_title != "":
             # 如果存在子Page就加入到待解析队列
-            common_op.debug_log("title ret = " + title_ret)
+            common_op.debug_log("title ret = " + db_page_title)
             if parser_type != NotionDump.PARSER_TYPE_PLAIN:
                 common_op.debug_log("title_parser add page id = " + page_id, level=NotionDump.DUMP_MODE_DEFAULT)
             else:
                 common_op.debug_log("title_parser add page id = " + page_id)
             # 数据库里的都是子页面
-            common_op.add_new_child_page(self.child_pages, key_id=page_id, page_name=title_ret)
+            common_op.add_new_child_page(self.child_pages, key_id=page_id, page_name=db_page_title)
 
             # 如果有子页面就添加一个占位符，之后方便重定位
-            title_ret = content_format.get_database_title_format(page_id, title_ret, self.export_child)
-        return title_ret
+            db_page_title = content_format.get_database_title_format(page_id, db_page_title, self.export_child)
+        return db_page_title
 
     # 数据库 rich_text
     def rich_text_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
@@ -313,7 +324,7 @@ class BaseParser:
             common_op.debug_log("rich_text type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
-        return self.__text_list_parser(block_handle["rich_text"], parser_type)
+        return self.__text_list_parser(block_handle["rich_text"], parser_type, is_db=True)
 
     # 数据库 multi_select
     def multi_select_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
@@ -799,7 +810,7 @@ class BaseParser:
         common_op.add_new_child_page(
             self.child_pages,
             key_id=image_id,
-            link_id=image_url,
+            link_src=image_url,
             page_type="image",
             page_name=image_name
         )
@@ -851,7 +862,7 @@ class BaseParser:
         common_op.add_new_child_page(
             self.child_pages,
             key_id=file_id,
-            link_id=file_url,
+            link_src=file_url,
             page_type="file",
             page_name=file_name
         )

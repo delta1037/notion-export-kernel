@@ -170,12 +170,12 @@ class NotionQuery:
             return retrieve_ret
         except APIResponseError as error:
             if error.code == APIErrorCode.ObjectNotFound:
-                common_op.debug_log("Page retrieve is invalid, id=" + page_id,
+                common_op.debug_log("Page retrieve is invalid(api), id=" + page_id,
                                     level=NotionDump.DUMP_MODE_DEFAULT)
             else:
                 # Other error handling code
                 common_op.debug_log(error)
-                common_op.debug_log("Page retrieve is invalid, id=" + page_id,
+                common_op.debug_log("Page retrieve is invalid(other), id=" + page_id,
                                     level=NotionDump.DUMP_MODE_DEFAULT)
         except Exception as e:
             common_op.debug_log(e)

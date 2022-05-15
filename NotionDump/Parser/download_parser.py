@@ -5,7 +5,7 @@
 import os
 import urllib.request
 from time import time, sleep
-from urllib.error import URLError, HTTPError, ContentTooShortError
+from urllib.error import URLError
 
 import NotionDump
 from NotionDump.utils import common_op, internal_var
@@ -44,7 +44,7 @@ class DownloadParser:
         self.last_call_time = time()
 
         # 解析文件后缀名
-        file_url = child_page_item["link_id"]
+        file_url = child_page_item["link_src"]
         common_op.debug_log("download url is " + file_url, level=NotionDump.DUMP_MODE_DEBUG)
         if file_url == "":
             return ""
