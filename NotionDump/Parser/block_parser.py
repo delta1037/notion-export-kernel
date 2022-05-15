@@ -79,7 +79,11 @@ class BlockParser:
             common_op.debug_log("type synced_block " + block_id + " get child", level=NotionDump.DUMP_MODE_DEFAULT)
         else:
             block_id = block["id"]
-        block_list = self.query_handle.retrieve_block_children(block_id)["results"]
+
+        block_list = []
+        retrieve_ret = self.query_handle.retrieve_block_children(block_id)
+        if retrieve_ret is not None:
+            block_list = retrieve_ret["results"]
 
         # 如果没有获取到块，也返回空
         if len(block_list) == 0:
