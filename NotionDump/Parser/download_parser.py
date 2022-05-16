@@ -63,12 +63,15 @@ class DownloadParser:
         try:
             urllib.request.urlretrieve(file_url, download_name)
         except urllib.error.HTTPError as e:
-            common_op.debug_log("download name " + download_name + " get error:", level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log("download name " + download_name + " get error:HTTPError", level=NotionDump.DUMP_MODE_DEFAULT)
             common_op.debug_log(e, level=NotionDump.DUMP_MODE_DEFAULT)
         except urllib.error.ContentTooShortError as e:
-            common_op.debug_log("download name " + download_name + " get error:", level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log("download name " + download_name + " get error:ContentTooShortError", level=NotionDump.DUMP_MODE_DEFAULT)
             common_op.debug_log(e, level=NotionDump.DUMP_MODE_DEFAULT)
         except urllib.error.URLError as e:
-            common_op.debug_log("download name " + download_name + " get error:", level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log("download name " + download_name + " get error:URLError", level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log(e, level=NotionDump.DUMP_MODE_DEFAULT)
+        except TimeoutError as e:
+            common_op.debug_log("download name " + download_name + " get error:TimeoutError", level=NotionDump.DUMP_MODE_DEFAULT)
             common_op.debug_log(e, level=NotionDump.DUMP_MODE_DEFAULT)
         return download_name
