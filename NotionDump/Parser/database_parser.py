@@ -82,7 +82,15 @@ class DatabaseParser:
         elif item_block["type"] == "relation":
             item_ret = self.base_parser.relation_parser(item_block)
         elif item_block["type"] == "rollup":
-            item_ret = self.base_parser.rollup_parser(item_block)
+            # rollup类型单独解析
+            rollup_block = item_block["rollup"]
+            if "array" in rollup_block:
+                for rollup_item in rollup_block["array"]:
+                    if item_ret != "":
+                        item_ret += ","
+                    item_ret += self.__parser_item(rollup_item, "")
+        elif item_block["type"] == "formula":
+            item_ret = self.base_parser.formula_parser(item_block)
         elif item_block["type"] == "created_time":
             item_ret = self.base_parser.created_time_parser(item_block)
         elif item_block["type"] == "last_edited_time":

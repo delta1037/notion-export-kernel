@@ -508,17 +508,18 @@ class BaseParser:
             relation_ret += content_format.get_database_title_format(relation_id + "_relation", "", self.export_child)
         return relation_ret
 
-    # 数据库 rollup 数据
-    def rollup_parser(self, block_handle):
-        if block_handle["type"] != "rollup":
-            common_op.debug_log("rollup type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+    # 数据库 formula 数据
+    def formula_parser(self, block_handle):
+        if block_handle["type"] != "formula":
+            common_op.debug_log("formula type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
-        rollup_block = block_handle["rollup"]
+        formula_block = block_handle["formula"]
         ret_str = ""
-        if rollup_block[rollup_block["type"]] is None:
-            return ret_str
-        ret_str = rollup_block[rollup_block["type"]]
+        if formula_block["type"] == "string":
+            ret_str = formula_block["string"]
+        else:
+            ret_str = "[unknown_formula_type:" + formula_block["type"] + "]"
         return ret_str
 
     # 数据库 created_time
