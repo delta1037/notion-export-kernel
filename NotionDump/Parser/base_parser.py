@@ -32,7 +32,11 @@ class BaseParser:
     def __annotations_parser(block_handle, str_plain):
         if str_plain is None or str_plain == "":
             return ""
-        str_ret = str_plain
+        last_char = str_plain[-1:]
+        if last_char == "\n" or last_char == "\t":
+            str_ret = str_plain[0:-1]
+        else:
+            str_ret = str_plain
         if block_handle["code"]:
             str_ret = "`" + str_ret + "`"
         if block_handle["underline"]:
@@ -50,6 +54,8 @@ class BaseParser:
                 str_ret = "<font color=\"" + color_transformer(block_handle["color"], background=False) + "\">" + str_ret + "</font>"
         if block_handle["strikethrough"]:
             str_ret = "~~" + str_ret + "~~"
+        if last_char == "\n" or last_char == "\t":
+            str_ret += last_char
         return str_ret
 
     def __text_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
@@ -58,7 +64,10 @@ class BaseParser:
                 "text type error! id=" + self.base_id + " not type " + block_handle["type"],
                 level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
-        text_str = block_handle["plain_text"]
+
+        text_str = ""
+        if "plain_text" in block_handle:
+            text_str = block_handle["plain_text"]
         if text_str is None:
             text_str = ""
         # 如果有链接
