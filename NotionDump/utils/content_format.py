@@ -1,8 +1,15 @@
 # author: delta1037
 # Date: 2022/01/08
 # mail:geniusrabbit@qq.com
+import datetime
+
+import dateutil.parser
+
 
 # 获取mention的格式
+import NotionDump
+
+
 def get_mention_format(mention_content):
     return "@(" + mention_content + ")"
 
@@ -34,13 +41,25 @@ def get_url_format(url_plain, name="link"):
     return "[" + name + "](" + url_plain + ")"
 
 
+def format_date_or_time(date_time):
+    print(date_time)
+    t_datetime = dateutil.parser.parse(date_time)
+    print(date_time, t_datetime)
+    if date_time.find('T') != -1:
+        # datetime
+        return t_datetime.strftime(NotionDump.FORMAT_DATETIME)
+    else:
+        # date
+        return t_datetime.strftime(NotionDump.FORMAT_DATE)
+
+
 # 封装date的格式
 def get_date_format(start, end):
     ret_str = ""
     if start is not None:
-        ret_str = start
+        ret_str = format_date_or_time(start)
     if end is not None:
-        ret_str += " ~ " + end  # 日期之间用“~”分割
+        ret_str += " ~ " + format_date_or_time(end)  # 日期之间用“~”分割
     return ret_str
 
 

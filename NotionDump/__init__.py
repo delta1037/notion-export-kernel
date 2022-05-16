@@ -29,3 +29,5 @@ PARSER_TYPE_PLAIN = 2
 # 一些配置开关
 # 是否导出page的properties
 S_PAGE_PROPERTIES = True
+FORMAT_DATE = "%Y/%m/%d"
+FORMAT_DATETIME = "%Y/%m/%d-%H:%M:%S"
