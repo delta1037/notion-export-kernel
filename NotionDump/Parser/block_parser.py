@@ -92,7 +92,7 @@ class BlockParser:
         common_op.debug_log("## retrieve block " + block_id, level=NotionDump.DUMP_MODE_DEFAULT)
         return block_list
 
-    def parser_block(self, block, list_index, last_line_is_table):
+    def parser_block(self, block, list_index, last_line_is_table, prefix):
         block_type = block["type"]
         block_text = ""
         if block_type == "paragraph":
@@ -125,9 +125,12 @@ class BlockParser:
         elif block_type == "callout":
             # callout
             block_text = self.base_parser.callout_parser(block, self.parser_type)
+            # callout内换行使用HTML符号
+            block_text = block_text.replace('\n', '<br>')
         elif block_type == "code":
             # code
-            block_text = self.base_parser.code_parser(block, self.parser_type)
+            code_text = self.base_parser.code_parser(block, self.parser_type)
+            block_text = code_text.replace('\n', '\n'+prefix)
         elif block_type == "quote":
             # quote
             block_text = self.base_parser.quote_parser(block, self.parser_type)
@@ -173,21 +176,23 @@ class BlockParser:
             block_text = ''
         elif block_type == "breadcrumb":
             # 路径信息不解析（notion也不会返回）
-            block_text = ''
+            block_text = "[breadcrumb]"
         else:
             common_op.debug_log("[ISSUE] unknown page block properties type:" + block_type, level=NotionDump.DUMP_MODE_DEFAULT)
+            block_text = "[unknown_type:" + block_type + "]"
         return block_text
 
-    def parser_block_list(self, block_list, indent=0, line_div="\n"):
+    def parser_block_list(self, block_list, indent=0, line_div="\n", last_block_type="none"):
         prefix = ""
         p_index = 0
-        while p_index < indent:
+        # line_div 为br时，是内部换行，\n时是大块换行
+        while p_index < indent and line_div == "\n":
             prefix += "\t"  # 前缀是一个TAB
             p_index += 1
 
         # 如果有内容先加个换行再说
         block_text = ""
-        if indent != 0:
+        if indent != 0 and line_div == "\n":
             block_text = line_div
 
         last_type = "to_do"  # 初始化不换行
@@ -199,37 +204,46 @@ class BlockParser:
         for block in block_list:
             # 遍历block，解析内容，填充到md文件中
             block_type = block["type"]
-            if common_op.parser_newline(last_type, block_type) and block_text != "":
-                block_text += line_div
-            if last_type == "numbered_list_item":
-                list_index = list_index + 1
-            else:
-                list_index = 1
-            last_type = block_type
-            if block_type != "table" and block_type != "table_row":
-                block_text += prefix
 
             # 在外面解析列类型
             if block_type == "column_list":
                 # 列类型的分解
                 column_list = self.__get_children_block_list(block)
+                if block_text == "\n":
+                    # 如果只有一个换行符，重置内容
+                    block_text = ""
                 if column_list is not None:
                     for column in column_list:
                         column_rows = self.__get_children_block_list(column)
                         if column_rows is not None:
                             block_text += self.parser_block_list(column_rows, indent)
-                        block_text += "\n"
             elif block_type == "synced_block":
                 # 同步块解析其中的内容
                 synced_block_list = self.__get_children_block_list(block)
+                if block_text == "\n":
+                    # 如果只有一个换行符，重置内容
+                    block_text = ""
                 if synced_block_list is not None:
-                    block_text += self.parser_block_list(synced_block_list, indent)
-                block_text += "\n"
+                    block_text += self.parser_block_list(synced_block_list, indent, last_block_type="synced_block")
             else:
+                # 如果是连续的类型，就不需要额外加换行符
+                if common_op.parser_newline(last_type, block_type) and block_text != "" and block_text != "\n":
+                    block_text += line_div
+
+                # 记录数字列表的标识
+                if last_type == "numbered_list_item":
+                    list_index = list_index + 1
+                else:
+                    list_index = 1
+                last_type = block_type
+                if block_type != "table" and block_type != "table_row":
+                    block_text += prefix
+
                 block_text += self.parser_block(
                     block=block,
                     list_index=list_index,
-                    last_line_is_table=last_line_is_table
+                    last_line_is_table=last_line_is_table,
+                    prefix=prefix
                 )
 
                 # 看改块下面有没有子块，如果有就继续解析
@@ -245,11 +259,14 @@ class BlockParser:
                             or block_type == "quote" \
                             or block_type == "callout":
                         # 不需要加大indent值
+                        # if block_type != "quote" and block_type != "callout":
+                        #     # 处理quote和callout内部的换行问题
                         block_text += t_line_div
                         block_text += self.parser_block_list(children_block_list, indent, line_div=t_line_div)
                     else:
                         block_text += self.parser_block_list(children_block_list, indent + 1)
-                block_text += "\n"
+                else:
+                    block_text += "\n"
 
             if block_type == "table_row":
                 # 第一行设置首行标志
