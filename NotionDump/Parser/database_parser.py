@@ -118,7 +118,7 @@ class DatabaseParser:
             self.base_parser.set_new_id(new_id)
 
         # 数据库是空的，直接返回完事
-        if len(page_properties) == 0:
+        if len(page_properties) == 0 or len(page_properties) == 1:
             return ""
 
         properties_md = "|KEY|VALUE|\n|---|---|"

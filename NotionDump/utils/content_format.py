@@ -42,9 +42,9 @@ def get_url_format(url_plain, name="link"):
 
 
 def format_date_or_time(date_time):
-    print(date_time)
+    # print(date_time)
     t_datetime = dateutil.parser.parse(date_time)
-    print(date_time, t_datetime)
+    # print(date_time, t_datetime)
     if date_time.find('T') != -1:
         # datetime
         return t_datetime.strftime(NotionDump.FORMAT_DATETIME)

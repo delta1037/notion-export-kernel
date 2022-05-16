@@ -141,7 +141,14 @@ class MixParser:
         if json_type == "database":
             tmp_filename = self.database_parser.database_to_file(json_handle, col_name_list=col_name_list)
         elif json_type == "block":
-            tmp_filename = self.block_parser.block_to_md(json_handle)
+            # 解析属性文本到变量中
+            page_properties = None
+            if NotionDump.S_PAGE_PROPERTIES:
+                # API中获取相关细节
+                page_detail = self.query_handle.retrieve_page(self.mix_id)
+                # 获取文本
+                page_properties = self.database_parser.database_to_md(page_detail, new_id=self.mix_id)
+            tmp_filename = self.block_parser.block_to_md(json_handle, page_detail=page_properties)
         else:
             common_op.debug_log("unknown parser_type:" + json_type, level=NotionDump.DUMP_MODE_DEFAULT)
             return None
@@ -154,7 +161,15 @@ class MixParser:
         if json_type == "database":
             common_op.update_child_pages(self.database_parser.get_child_pages_dic(), self.mix_id)
         elif json_type == "block":
-            common_op.update_child_pages(self.block_parser.get_child_pages_dic(), self.mix_id)
+            child_pages_dic = self.block_parser.get_child_pages_dic()
+            # print("page", child_pages_dic)
+            if NotionDump.S_PAGE_PROPERTIES:
+                db_child_pages_dic = self.database_parser.get_child_pages_dic()
+                # print("db", db_child_pages_dic)
+                for db_child_dic_key in db_child_pages_dic:
+                    if db_child_dic_key not in child_pages_dic:
+                        child_pages_dic[db_child_dic_key] = db_child_pages_dic[db_child_dic_key]
+            common_op.update_child_pages(child_pages_dic, self.mix_id)
         else:
             common_op.debug_log("unknown parser_type:" + json_type, level=NotionDump.DUMP_MODE_DEFAULT)
             return None
