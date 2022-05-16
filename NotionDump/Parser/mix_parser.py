@@ -90,6 +90,14 @@ class MixParser:
                     # 解析内容到临时文件中
                     tmp_filename = self.block_parser.block_to_md(page_json, page_detail=page_properties, new_id=child_id)
                     child_pages_dic = self.block_parser.get_child_pages_dic()
+                    # print("page", child_pages_dic)
+                    if NotionDump.S_PAGE_PROPERTIES:
+                        db_child_pages_dic = self.database_parser.get_child_pages_dic()
+                        # print("db", db_child_pages_dic)
+                        for db_child_dic_key in db_child_pages_dic:
+                            if db_child_dic_key not in child_pages_dic:
+                                child_pages_dic[db_child_dic_key] = db_child_pages_dic[db_child_dic_key]
+                        # print(child_pages_dic)
                 elif common_op.is_db(child_id):
                     # retrieve_db = self.query_handle.retrieve_database(child_id)
                     # print("########## ", "retrieve database " + child_id, retrieve_db)

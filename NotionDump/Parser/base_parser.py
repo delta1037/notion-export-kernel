@@ -485,6 +485,29 @@ class BaseParser:
             ret_str += self.__db_file_parser(file, parser_type)
         return ret_str
 
+    # 数据库 relation 数据
+    def relation_parser(self, block_handle):
+        if block_handle["type"] != "relation":
+            common_op.debug_log("relation type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
+            return ""
+        relation_list = block_handle["relation"]
+        relation_ret = ""
+        for relation_item in relation_list:
+            relation_id = relation_item["id"].replace("-", "")
+            # 按照软连接处理
+            common_op.add_new_child_page(
+                self.child_pages,
+                key_id=relation_id + "_relation",
+                link_id=relation_id,
+                page_type="page",
+                page_name=""
+            )
+            if relation_ret != "":
+                relation_ret += ","
+            relation_ret += content_format.get_database_title_format(relation_id + "_relation", "", self.export_child)
+        return relation_ret
+
     # 数据库 rollup 数据
     def rollup_parser(self, block_handle):
         if block_handle["type"] != "rollup":

@@ -79,6 +79,8 @@ class DatabaseParser:
             item_ret = self.base_parser.number_parser(item_block)
         elif item_block["type"] == "files":
             item_ret = self.base_parser.files_parser(item_block, parser_type=self.parser_type)
+        elif item_block["type"] == "relation":
+            item_ret = self.base_parser.relation_parser(item_block)
         elif item_block["type"] == "rollup":
             item_ret = self.base_parser.rollup_parser(item_block)
         elif item_block["type"] == "created_time":
