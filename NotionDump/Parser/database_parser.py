@@ -123,10 +123,15 @@ class DatabaseParser:
 
         properties_md = "|KEY|VALUE|\n|---|---|"
         # print(page_properties.keys())
+        p_title = ""
         for p_name in list(page_properties.keys())[::-1]:
             p_value = self.__parser_item(page_properties[p_name], page_id="")
+            if page_properties[p_name]["type"] == "title":
+                p_title = p_value
             # print(p_value, p_name)
             properties_md += "\n" + "|" + str(p_name) + "|" + str(p_value) + "|"
+        if p_title != "":
+            properties_md = "# " + p_title + "\n" + properties_md
         return properties_md
 
     # 格式化存储，这里是临时文件存在方式（在外面转成数据库，或者最终输出CSV的格式）
