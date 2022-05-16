@@ -348,7 +348,7 @@ class BaseParser:
         for multi_select in multi_select_list:
             if ret_str != "":
                 ret_str += ","  # 多个选项之间用“,”分割
-            if parser_type == NotionDump.PARSER_TYPE_MD and multi_select["color"] != "default":
+            if parser_type == NotionDump.PARSER_TYPE_MD:
                 ret_str += "<span style=\"background-color:" \
                            + color_transformer_db(multi_select["color"]) \
                            + "\">" + multi_select["name"] + "</span>"
@@ -366,7 +366,7 @@ class BaseParser:
         ret_str = ""
         if select is None:
             return ret_str
-        if parser_type == NotionDump.PARSER_TYPE_MD and select["color"] != "default":
+        if parser_type == NotionDump.PARSER_TYPE_MD:
             ret_str = "<span style=\"background-color:" \
                 + color_transformer_db(select["color"]) \
                 + "\">" + select["name"] + "</span>"
@@ -840,9 +840,9 @@ class BaseParser:
         else:
             return content_format.get_page_format_plain(image_name)
 
-    # Page file(file,pdf)
+    # Page file(file,pdf,video)
     def file_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
-        if block_handle["type"] != "file" and block_handle["type"] != "pdf":
+        if block_handle["type"] != "file" and block_handle["type"] != "pdf" and block_handle["type"] != "video":
             common_op.debug_log("file type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
@@ -866,8 +866,8 @@ class BaseParser:
             # url中分离的内容需要转码
             file_name = unquote(file_name, 'utf-8')
         if file_name == "":
-            # 如果文件没有名字使用id作为默认名字
-            file_name = file_id
+            # 如果文件没有名字使用file作为默认名字
+            file_name = "FILE"
         common_op.add_new_child_page(
             self.child_pages,
             key_id=file_id,
@@ -901,7 +901,7 @@ class BaseParser:
             return bookmark_ret
         bookmark_name = self.__text_list_parser(block_handle["bookmark"]["caption"], parser_type)
         if bookmark_name == "":
-            bookmark_name = block_handle["id"]
+            bookmark_name = "BOOKMARK"
         bookmark_url = block_handle["bookmark"]["url"]
 
         # bookmark 类型要返回一个链接占位符，供后续解析使用
@@ -910,6 +910,25 @@ class BaseParser:
             return content_format.get_file_format_md(bookmark_name, bookmark_url)
         else:
             return content_format.get_file_format_plain(bookmark_name, bookmark_url)
+
+    # Page embed
+    def embed_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
+        embed_ret = ""
+        if block_handle["type"] != "embed":
+            common_op.debug_log("embed type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
+                                level=NotionDump.DUMP_MODE_DEFAULT)
+            return embed_ret
+        embed_name = self.__text_list_parser(block_handle["embed"]["caption"], parser_type)
+        if embed_name == "":
+            embed_name = "EMBED"
+        embed_url = block_handle["embed"]["url"]
+
+        # bookmark 类型要返回一个链接占位符，供后续解析使用
+        if parser_type == NotionDump.PARSER_TYPE_MD:
+            # file转换成文件链接的形式
+            return content_format.get_file_format_md(embed_name, embed_url)
+        else:
+            return content_format.get_file_format_plain(embed_name, embed_url)
 
     # Page link_preview
     def link_preview_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):

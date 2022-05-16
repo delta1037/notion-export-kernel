@@ -90,6 +90,7 @@ class DatabaseParser:
         elif item_block["type"] == "last_edited_by":
             item_ret = self.base_parser.last_edited_by_parser(item_block)
         else:
+            item_ret = "[unknown_type:" + item_block["type"] + "]"
             common_op.debug_log("[ISSUE] unknown properties type:" + item_block["type"], level=NotionDump.DUMP_MODE_DEFAULT)
 
         return item_ret

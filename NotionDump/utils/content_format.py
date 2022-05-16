@@ -122,7 +122,7 @@ def color_transformer(input_color, background=False):
 
 
 def color_transformer_db(input_color):
-    if input_color == "light_gray":
+    if input_color == "default":
         return "#E3E2E080"
     if input_color == "gray":
         return "#E3E2E0"

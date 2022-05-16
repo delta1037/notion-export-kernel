@@ -157,12 +157,15 @@ class BlockParser:
         elif block_type == "image":
             # Page image
             block_text = self.base_parser.image_parser(block, self.parser_type)
-        elif block_type == "file" or block_type == "pdf":
+        elif block_type == "file" or block_type == "pdf" or block_type == "video":
             # Page file
             block_text = self.base_parser.file_parser(block, self.parser_type)
         elif block_type == "bookmark":
             # Page bookmark
             block_text = self.base_parser.bookmark_parser(block, self.parser_type)
+        elif block_type == "embed":
+            # Page embed
+            block_text = self.base_parser.embed_parser(block, self.parser_type)
         elif block_type == "link_preview":
             # Page bookmark
             block_text = self.base_parser.link_preview_parser(block, self.parser_type)
@@ -173,7 +176,7 @@ class BlockParser:
             block_text = '[TOC]'
         elif block_type == "template":
             # 模板内容不解析
-            block_text = ''
+            block_text = '[TEMPLATE]'
         elif block_type == "breadcrumb":
             # 路径信息不解析（notion也不会返回）
             block_text = "[breadcrumb]"
