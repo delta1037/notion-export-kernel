@@ -277,10 +277,10 @@ class BlockParser:
 
         return block_text
 
-    def block_to_md(self, block_handle, new_id=None):
+    def block_to_md(self, block_handle, page_detail=None, new_id=None):
         block_list = block_handle["results"]
         # 空内容不生成文件
-        if len(block_list) == 0:
+        if len(block_list) == 0 and (page_detail is None or page_detail == ""):
             return ""
 
         # 创建Markdown文件
@@ -291,8 +291,14 @@ class BlockParser:
             tmp_md_filename = self.tmp_dir + self.block_id + ".md"
 
         file = open(tmp_md_filename, "w", encoding="utf-8", newline='')
+
+        # 如果存在属性就拼接上去
+        block_text = ""
+        if page_detail is not None and page_detail != "":
+            block_text = page_detail + "\n" + NotionDump.MD_DIVIDER + "\n"
+
         # 解析block_list
-        block_text = self.parser_block_list(block_list)
+        block_text += self.parser_block_list(block_list)
 
         # 将解析内容写入文件
         file.write(block_text)

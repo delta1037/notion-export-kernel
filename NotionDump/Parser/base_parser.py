@@ -313,6 +313,10 @@ class BaseParser:
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
         db_page_title = self.__text_list_parser(block_handle["title"], parser_type, is_db=True)
+        if page_id == "":
+            # 如果page id是空的，说明只想要内容，不需要重定位
+            return db_page_title
+
         if db_page_title != "":
             # 如果存在子Page就加入到待解析队列
             common_op.debug_log("title ret = " + db_page_title)

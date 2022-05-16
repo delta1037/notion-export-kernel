@@ -25,3 +25,7 @@ DUMP_TYPE_DB_TABLE = 4
 # 解析的类型：分为Markdown和纯文本
 PARSER_TYPE_MD = 0
 PARSER_TYPE_PLAIN = 2
+
+# 一些配置开关
+# 是否导出page的properties
+S_PAGE_PROPERTIES = True

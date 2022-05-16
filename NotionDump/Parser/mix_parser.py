@@ -80,8 +80,15 @@ class MixParser:
                     if page_json is None:
                         common_op.debug_log("get page error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
                         continue
-                    # 解析到临时文件中
-                    tmp_filename = self.block_parser.block_to_md(page_json, new_id=child_id)
+                    # 解析属性文本到变量中
+                    page_properties = None
+                    if NotionDump.S_PAGE_PROPERTIES:
+                        # API中获取相关细节
+                        page_detail = self.query_handle.retrieve_page(child_id)
+                        # 获取文本
+                        page_properties = self.database_parser.database_to_md(page_detail, new_id=child_id)
+                    # 解析内容到临时文件中
+                    tmp_filename = self.block_parser.block_to_md(page_json, page_detail=page_properties, new_id=child_id)
                     child_pages_dic = self.block_parser.get_child_pages_dic()
                 elif common_op.is_db(child_id):
                     # retrieve_db = self.query_handle.retrieve_database(child_id)

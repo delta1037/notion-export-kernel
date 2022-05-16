@@ -80,7 +80,7 @@ class NotionQuery:
                 if next_cur is None:
                     break
             if NotionDump.DUMP_MODE == NotionDump.DUMP_MODE_DEBUG:
-                self.__save_to_json(query_ret, block_id, prefix="retrieve_")
+                self.__save_to_json(query_ret, block_id, prefix="retrieve_block_")
             return query_ret
         except APIResponseError as error:
             if error.code == APIErrorCode.ObjectNotFound:
@@ -166,7 +166,7 @@ class NotionQuery:
         try:
             retrieve_ret = self.client.pages.retrieve(page_id=page_id)
             if NotionDump.DUMP_MODE == NotionDump.DUMP_MODE_DEBUG:
-                self.__save_to_json(retrieve_ret, page_id, prefix="retrieve_")
+                self.__save_to_json(retrieve_ret, page_id, prefix="retrieve_page_")
             return retrieve_ret
         except APIResponseError as error:
             if error.code == APIErrorCode.ObjectNotFound:
