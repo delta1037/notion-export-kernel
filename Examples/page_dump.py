@@ -33,11 +33,20 @@ def test_page_parser(query, export_child=False, db_parser_type=NotionDump.PARSER
     )
 
 
+def test_page_retrieve(query: NotionQuery):
+    # 获取页面信息测试
+    ret = query.retrieve_page("0cee7c12f04c4157bcc025355adf2312")
+    print(ret)
+
+
 if __name__ == '__main__':
     query_handle = NotionQuery(token=TOKEN_TEST)
     if query_handle is None:
         logging.exception("query handle init error")
         exit(-1)
+
+    # 测试收集页面信息
+    # test_page_retrieve(query_handle)
 
     # 页面解析测试,递归
     test_page_parser(query_handle, True)
