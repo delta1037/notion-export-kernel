@@ -85,10 +85,14 @@ class DatabaseParser:
             # rollup类型单独解析
             rollup_block = item_block["rollup"]
             if "array" in rollup_block:
+                # 列表的解析
                 for rollup_item in rollup_block["array"]:
                     if item_ret != "":
                         item_ret += ","
                     item_ret += self.__parser_item(rollup_item, "")
+            else:
+                # 单个内容的解析
+                item_ret += self.__parser_item(rollup_block, "")
         elif item_block["type"] == "formula":
             item_ret = self.base_parser.formula_parser(item_block)
         elif item_block["type"] == "created_time":

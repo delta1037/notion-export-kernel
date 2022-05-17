@@ -464,7 +464,7 @@ class BaseParser:
         if number is None:
             return ret_str
         ret_str = number
-        return ret_str
+        return str(ret_str)
 
     # 数据库 files
     def files_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
@@ -518,6 +518,12 @@ class BaseParser:
         ret_str = ""
         if formula_block["type"] == "string":
             ret_str = formula_block["string"]
+        elif formula_block["type"] == "number":
+            ret_str = str(formula_block["number"])
+        elif formula_block["type"] == "boolean":
+            ret_str = str(formula_block["boolean"])
+        elif formula_block["type"] == "date":
+            ret_str = self.date_parser(formula_block)
         else:
             ret_str = "[unknown_formula_type:" + formula_block["type"] + "]"
         return ret_str

@@ -30,7 +30,7 @@ PARSER_TYPE_PLAIN = 2
 FORMAT_DATE = "%Y/%m/%d"
 FORMAT_DATETIME = "%Y/%m/%d-%H:%M:%S"
 # 是否导出page的properties
-S_PAGE_PROPERTIES = False
+S_PAGE_PROPERTIES = True
 # 主题的格式，default，light，dark，self_define
 S_THEME_TYPE = "default"
 # f开头的是字体颜色，b开头的是背景颜色，d开头的是数据库标签
@@ -53,7 +53,7 @@ S_THEME_LIGHT = {
     "b_purple": "#F4F0F7CC",
     "b_pink": "#F9EEF3CC",
     "b_red": "#FDEBEC",
-    "d_light_gray": "E3E2E080",
+    "d_light_gray": "#E3E2E080",
     "d_gray": "#E3E2E0",
     "d_brown": "#EEE0DA",
     "d_orange": "#FADEC9",
@@ -84,7 +84,7 @@ S_THEME_DARK = {
     "b_purple": "#3C2D49",
     "b_pink": "#4E2C3C",
     "b_red": "#522E2A",
-    "d_light_gray": "373737",
+    "d_light_gray": "#373737",
     "d_gray": "#5A5A5A",
     "d_brown": "#603B2C",
     "d_orange": "#854C1D",
@@ -115,7 +115,7 @@ S_THEME_SELF_DEFINE = {
     "b_purple": "#F4F0F7CC",
     "b_pink": "#F9EEF3CC",
     "b_red": "#FDEBEC",
-    "d_light_gray": "E3E2E080",
+    "d_light_gray": "#E3E2E080",
     "d_gray": "#E3E2E0",
     "d_brown": "#EEE0DA",
     "d_orange": "#FADEC9",
