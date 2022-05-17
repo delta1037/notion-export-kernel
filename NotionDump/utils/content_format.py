@@ -92,73 +92,41 @@ def get_equation_block(equation):
 
 
 def color_transformer(input_color, background=False):
-    if input_color == "gray":
-        if background:
-            return "#F1F1EF"
-        else:
-            return "#787774"
-    if input_color == "brown":
-        if background:
-            return "#F4EEEE"
-        else:
-            return "#9F6B53"
-    if input_color == "orange":
-        if background:
-            return "#FBECDD"
-        else:
-            return "#D9730D"
-    if input_color == "yellow":
-        if background:
-            return "#FBF3DB"
-        else:
-            return "#CB912F"
-    if input_color == "green":
-        if background:
-            return "#EDF3EC"
-        else:
-            return "#448361"
-    if input_color == "blue":
-        if background:
-            return "#E7F3F8"
-        else:
-            return "#337EA9"
-    if input_color == "purple":
-        if background:
-            return "#F4F0F7CC"
-        else:
-            return "#9065B0"
-    if input_color == "pink":
-        if background:
-            return "#F9EEF3CC"
-        else:
-            return "#C14C8A"
-    if input_color == "red":
-        if background:
-            return "#FDEBEC"
-        else:
-            return "#D44C47"
+    if background:
+        color_str = "b_" + input_color
+    else:
+        color_str = "f_" + input_color
+    color_ret = ""
+    if NotionDump.S_THEME_TYPE == "default" or NotionDump.S_THEME_TYPE == "light":
+        if color_str in NotionDump.S_THEME_LIGHT:
+            color_ret = NotionDump.S_THEME_LIGHT[color_str]
+    elif NotionDump.S_THEME_TYPE == "dark":
+        if color_str in NotionDump.S_THEME_DARK:
+            color_ret = NotionDump.S_THEME_DARK[color_str]
+    else:
+        if color_str in NotionDump.S_THEME_SELF_DEFINE:
+            color_ret = NotionDump.S_THEME_SELF_DEFINE[color_str]
+    if color_ret != "":
+        return color_ret
     return input_color
 
 
 def color_transformer_db(input_color):
     if input_color == "default":
-        return "#E3E2E080"
-    if input_color == "gray":
-        return "#E3E2E0"
-    if input_color == "brown":
-        return "#EEE0DA"
-    if input_color == "orange":
-        return "#FADEC9"
-    if input_color == "yellow":
-        return "#FDECC8"
-    if input_color == "green":
-        return "#DBEDDB"
-    if input_color == "blue":
-        return "#D3E5EF"
-    if input_color == "purple":
-        return "#E8DEEE"
-    if input_color == "pink":
-        return "#F5E0E9"
-    if input_color == "red":
-        return "#FFE2DD"
+        color_str = "d_light_gray"
+    else:
+        color_str = "d_" + input_color
+
+    color_ret = ""
+    if NotionDump.S_THEME_TYPE == "default" or NotionDump.S_THEME_TYPE == "light":
+        if color_str in NotionDump.S_THEME_LIGHT:
+            color_ret = NotionDump.S_THEME_LIGHT[color_str]
+    elif NotionDump.S_THEME_TYPE == "dark":
+        if color_str in NotionDump.S_THEME_DARK:
+            color_ret = NotionDump.S_THEME_DARK[color_str]
+    else:
+        if color_str in NotionDump.S_THEME_SELF_DEFINE:
+            color_ret = NotionDump.S_THEME_SELF_DEFINE[color_str]
+    if color_ret != "":
+        return color_ret
     return input_color

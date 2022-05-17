@@ -107,10 +107,10 @@ class DatabaseParser:
 
     def database_to_md(self, page_properties, new_id=None):
         if page_properties is None:
-            return ""
+            return "", ""
         # 获取属性部分
         if "properties" not in page_properties:
-            return ""
+            return "", ""
         page_properties = page_properties["properties"]
 
         # 设置基础解析器的id
@@ -118,8 +118,8 @@ class DatabaseParser:
             self.base_parser.set_new_id(new_id)
 
         # 数据库是空的，直接返回完事
-        if len(page_properties) == 0 or len(page_properties) == 1:
-            return ""
+        if len(page_properties) == 0:
+            return "", ""
 
         properties_md = "|KEY|VALUE|\n|---|---|"
         # print(page_properties.keys())
@@ -132,7 +132,11 @@ class DatabaseParser:
             properties_md += "\n" + "|" + str(p_name) + "|" + str(p_value) + "|"
         if p_title != "":
             properties_md = "# " + p_title + "\n" + properties_md
-        return properties_md
+
+        if len(page_properties) == 1:
+            return "", p_title
+        else:
+            return properties_md, p_title
 
     # 格式化存储，这里是临时文件存在方式（在外面转成数据库，或者最终输出CSV的格式）
     def database_to_file(self, database_handle, col_name_list=None, new_id=None):

@@ -75,6 +75,7 @@ class MixParser:
                 # 先更新页面的状态，无论获取成功或者失败都过去了，只获取一次
                 common_op.update_page_recursion(child_id, recursion=True)
                 common_op.debug_log("get page " + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
+                page_title = None
                 if common_op.is_page(child_id):
                     page_json = self.query_handle.retrieve_block_children(child_id)
                     if page_json is None:
@@ -82,11 +83,12 @@ class MixParser:
                         continue
                     # 解析属性文本到变量中
                     page_properties = None
-                    if NotionDump.S_PAGE_PROPERTIES:
+                    # print(NotionDump.S_PAGE_PROPERTIES, is_page_soft(child_id))
+                    if NotionDump.S_PAGE_PROPERTIES or common_op.is_page_soft(child_id):
                         # API中获取相关细节
                         page_detail = self.query_handle.retrieve_page(child_id)
                         # 获取文本
-                        page_properties = self.database_parser.database_to_md(page_detail, new_id=child_id)
+                        page_properties, page_title = self.database_parser.database_to_md(page_detail, new_id=child_id)
                     # 解析内容到临时文件中
                     tmp_filename = self.block_parser.block_to_md(page_json, page_detail=page_properties, new_id=child_id)
                     child_pages_dic = self.block_parser.get_child_pages_dic()
@@ -124,7 +126,8 @@ class MixParser:
 
                 common_op.debug_log("parser page " + child_id + " success", level=NotionDump.DUMP_MODE_DEFAULT)
                 # 再更新本地的存放路径
-                common_op.update_child_page_stats(child_id, dumped=True, local_path=tmp_filename)
+                # print("%%%%%%%%%%%", child_id, page_title)
+                common_op.update_child_page_stats(child_id, dumped=True, local_path=tmp_filename, page_title=page_title)
                 # 从页面里获取到所有的子页面,并将子页面添加到父id中
                 common_op.update_child_pages(child_pages_dic, child_id)
 
@@ -147,7 +150,7 @@ class MixParser:
                 # API中获取相关细节
                 page_detail = self.query_handle.retrieve_page(self.mix_id)
                 # 获取文本
-                page_properties = self.database_parser.database_to_md(page_detail, new_id=self.mix_id)
+                page_properties, page_title = self.database_parser.database_to_md(page_detail, new_id=self.mix_id)
             tmp_filename = self.block_parser.block_to_md(json_handle, page_detail=page_properties)
         else:
             common_op.debug_log("unknown parser_type:" + json_type, level=NotionDump.DUMP_MODE_DEFAULT)

@@ -11,7 +11,7 @@ from NotionDump.utils import internal_var
 
 
 # 更新子页面的状态
-def update_child_page_stats(child_key, dumped=False, main_page=False, local_path=None, page_type=None):
+def update_child_page_stats(child_key, dumped=False, main_page=False, local_path=None, page_type=None, page_title=None):
     if child_key not in internal_var.PAGE_DIC:
         # 如果现有的列表里没有这一条,则新加一条
         debug_log("CREATE child page " + child_key + "from temp", level=NotionDump.DUMP_MODE_DEFAULT)
@@ -27,7 +27,10 @@ def update_child_page_stats(child_key, dumped=False, main_page=False, local_path
             internal_var.PAGE_DIC[child_key]["type"] = "database"
         else:
             debug_log("update_child_page_stats page type is unknown:" + str(page_type), level=NotionDump.DUMP_MODE_DEFAULT)
-
+    if page_title is not None and internal_var.PAGE_DIC[child_key]["inter_soft_page"] is True:
+        internal_var.PAGE_DIC[child_key]["inter_soft_page"] = False
+        if internal_var.PAGE_DIC[child_key]["page_name"] == "":
+            internal_var.PAGE_DIC[child_key]["page_name"] = page_title
 
 # 关于软连接一共有如下情况
 # 同一个页面：add_new_child_page
@@ -117,6 +120,13 @@ def is_page_recursion(page_id):
         debug_log("page id not exist!!!", level=NotionDump.DUMP_MODE_DEFAULT)
         return False
     return not internal_var.PAGE_DIC[page_id]["inter_recursion"]
+
+
+def is_page_soft(page_id):
+    if page_id not in internal_var.PAGE_DIC:
+        debug_log("page id not exist!!!", level=NotionDump.DUMP_MODE_DEFAULT)
+        return False
+    return internal_var.PAGE_DIC[page_id]["inter_soft_page"]
 
 
 # page 返回True，DB返回False
