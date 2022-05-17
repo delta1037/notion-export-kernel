@@ -97,15 +97,18 @@ def color_transformer(input_color, background=False):
     else:
         color_str = "f_" + input_color
     color_ret = ""
-    if NotionDump.S_THEME_TYPE == "default" or NotionDump.S_THEME_TYPE == "light":
-        if color_str in NotionDump.S_THEME_LIGHT:
-            color_ret = NotionDump.S_THEME_LIGHT[color_str]
-    elif NotionDump.S_THEME_TYPE == "dark":
+    if NotionDump.S_THEME_TYPE == "dark":
+        # dark
         if color_str in NotionDump.S_THEME_DARK:
             color_ret = NotionDump.S_THEME_DARK[color_str]
-    else:
+    elif NotionDump.S_THEME_TYPE == "self_define":
+        # self_define
         if color_str in NotionDump.S_THEME_SELF_DEFINE:
             color_ret = NotionDump.S_THEME_SELF_DEFINE[color_str]
+    else:
+        # default light
+        if color_str in NotionDump.S_THEME_LIGHT:
+            color_ret = NotionDump.S_THEME_LIGHT[color_str]
     if color_ret != "":
         return color_ret
     return input_color
@@ -118,15 +121,18 @@ def color_transformer_db(input_color):
         color_str = "d_" + input_color
 
     color_ret = ""
-    if NotionDump.S_THEME_TYPE == "default" or NotionDump.S_THEME_TYPE == "light":
-        if color_str in NotionDump.S_THEME_LIGHT:
-            color_ret = NotionDump.S_THEME_LIGHT[color_str]
-    elif NotionDump.S_THEME_TYPE == "dark":
+    if NotionDump.S_THEME_TYPE == "dark":
+        # dark
         if color_str in NotionDump.S_THEME_DARK:
             color_ret = NotionDump.S_THEME_DARK[color_str]
-    else:
+    elif NotionDump.S_THEME_TYPE == "self_define":
+        # self_define
         if color_str in NotionDump.S_THEME_SELF_DEFINE:
             color_ret = NotionDump.S_THEME_SELF_DEFINE[color_str]
+    else:
+        # default light
+        if color_str in NotionDump.S_THEME_LIGHT:
+            color_ret = NotionDump.S_THEME_LIGHT[color_str]
     if color_ret != "":
         return color_ret
     return input_color
