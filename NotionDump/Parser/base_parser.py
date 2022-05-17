@@ -7,7 +7,7 @@ import NotionDump
 from NotionDump.utils import content_format, common_op
 from NotionDump.utils import internal_var
 from urllib.parse import unquote
-from NotionDump.utils.content_format import color_transformer, color_transformer_db
+from NotionDump.utils.content_format import color_transformer, color_transformer_db, format_date_or_time
 
 
 class BaseParser:
@@ -528,7 +528,7 @@ class BaseParser:
             common_op.debug_log("created_time type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
-        return block_handle["created_time"]
+        return format_date_or_time(block_handle["created_time"])
 
     # 数据库 last_edited_time
     def last_edited_time_parser(self, block_handle):
@@ -537,7 +537,7 @@ class BaseParser:
                 "last_edited_time type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                 level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
-        return block_handle["last_edited_time"]
+        return format_date_or_time(block_handle["last_edited_time"])
 
     def created_by_parser(self, block_handle):
         if block_handle["type"] != "created_by":
