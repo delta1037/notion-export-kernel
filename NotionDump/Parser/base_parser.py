@@ -355,7 +355,7 @@ class BaseParser:
             if parser_type == NotionDump.PARSER_TYPE_MD:
                 ret_str += "<span style=\"background-color:" \
                            + color_transformer_db(multi_select["color"]) \
-                           + "\">" + multi_select["name"] + "</span>"
+                           + "\">&nbsp;" + multi_select["name"] + "&nbsp;</span>"
             else:
                 ret_str += multi_select["name"]
         return ret_str
@@ -373,7 +373,7 @@ class BaseParser:
         if parser_type == NotionDump.PARSER_TYPE_MD:
             ret_str = "<span style=\"background-color:" \
                 + color_transformer_db(select["color"]) \
-                + "\">" + select["name"] + "</span>"
+                + "\">&nbsp;" + select["name"] + "&nbsp;</span>"
         else:
             ret_str = select["name"]
         return ret_str
