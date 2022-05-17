@@ -219,6 +219,9 @@ class BlockParser:
                     for column in column_list:
                         column_rows = self.__get_children_block_list(column)
                         if column_rows is not None:
+                            if block_text != "":
+                                # 与前边得隔离开
+                                block_text += "\n"
                             block_text += self.parser_block_list(column_rows, indent)
             elif block_type == "synced_block":
                 # 同步块解析其中的内容
