@@ -183,6 +183,8 @@ class BlockParser:
         else:
             common_op.debug_log("[ISSUE] unknown page block properties type:" + block_type, level=NotionDump.DUMP_MODE_DEFAULT)
             block_text = "[unknown_type:" + block_type + "]"
+        if block_text is None:
+            block_text = ""
         return block_text
 
     def parser_block_list(self, block_list, indent=0, line_div="\n", last_block_type="none"):

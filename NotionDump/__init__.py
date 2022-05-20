@@ -10,6 +10,10 @@ TMP_DIR = "./.tmp/"
 
 # Markdown的分割条语法
 MD_DIVIDER = "------"
+MD_BOOL_TRUE = "✓"
+MD_BOOL_FALSE = "✕"
+# ,、<br> 逗号或者换行
+MD_ROLLUP_SEP = ","
 
 # 日志输出模式
 DUMP_MODE_DEBUG = 0

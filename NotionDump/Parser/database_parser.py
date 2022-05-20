@@ -106,7 +106,8 @@ class DatabaseParser:
         else:
             item_ret = "[unknown_type:" + item_block["type"] + "]"
             common_op.debug_log("[ISSUE] unknown properties type:" + item_block["type"], level=NotionDump.DUMP_MODE_DEFAULT)
-
+        if item_ret is None:
+            item_ret = ""
         return item_ret
 
     def database_to_md(self, page_properties, new_id=None):
@@ -125,17 +126,22 @@ class DatabaseParser:
         if len(page_properties) == 0:
             return "", ""
 
-        properties_md = "|KEY|VALUE|\n|---|---|"
+        properties_md = ""
         # print(page_properties.keys())
         p_title = ""
+        p_title_name = ""
         for p_name in list(page_properties.keys())[::-1]:
-            p_value = self.__parser_item(page_properties[p_name], page_id="")
+            p_value = self.__parser_item(page_properties[p_name], page_id="").replace('\n', '<br>')
             if page_properties[p_name]["type"] == "title":
                 p_title = p_value
+                p_title_name = p_name
+                continue
             # print(p_value, p_name)
             properties_md += "\n" + "|" + str(p_name) + "|" + str(p_value) + "|"
-        if p_title != "":
-            properties_md = "# " + p_title + "\n" + properties_md
+        if p_title != "" or p_title_name != "":
+            properties_md = "|" + p_title_name + "|" + p_title + "|\n|---|---|" + properties_md
+        else:
+            properties_md = "|KEY|VALUE|\n|---|---|" + properties_md
 
         if len(page_properties) == 1:
             return "", p_title

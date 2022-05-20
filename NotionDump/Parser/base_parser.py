@@ -58,7 +58,7 @@ class BaseParser:
             str_ret += last_char
         return str_ret
 
-    def __text_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN):
+    def __text_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN, is_db_title=False):
         if block_handle["type"] != "text":
             common_op.debug_log(
                 "text type error! id=" + self.base_id + " not type " + block_handle["type"],
@@ -72,7 +72,7 @@ class BaseParser:
             text_str = ""
         # 如果有链接
         text_url = block_handle["href"]
-        if text_url is not None and parser_type == NotionDump.PARSER_TYPE_MD:
+        if text_url is not None and parser_type == NotionDump.PARSER_TYPE_MD and not is_db_title:  # 数据库标题越过链接解析
             # 文字有链接内容，分为网络链接和本地链接
             if text_url.startswith("http"):
                 # 网络链接，直接一步到位
@@ -114,25 +114,25 @@ class BaseParser:
         else:
             return text_str
 
-    def __text_block_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN, is_db=False):
+    def __text_block_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN, is_db_title=False):
         paragraph_ret = ""
         if block_handle["type"] == "text":
             paragraph_ret = self.__text_parser(block_handle, parser_type)
         elif block_handle["type"] == "equation":
             paragraph_ret = self.__equation_inline_parser(block_handle)
         elif block_handle["type"] == "mention":
-            paragraph_ret = self.__mention_parser(block_handle, parser_type, is_db=is_db)
+            paragraph_ret = self.__mention_parser(block_handle, parser_type, is_db_title=is_db_title)
         else:
             common_op.debug_log(
                 "text type " + block_handle["type"] + " error! parent_id= " + self.base_id,
                 level=NotionDump.DUMP_MODE_DEFAULT)
         return paragraph_ret
 
-    def __text_list_parser(self, text_list, parser_type=NotionDump.PARSER_TYPE_PLAIN, is_db=False):
+    def __text_list_parser(self, text_list, parser_type=NotionDump.PARSER_TYPE_PLAIN, is_db=False, is_db_title=False):
         plain_text = ""
         if text_list is not None:
             for text_block in text_list:
-                plain_text += self.__text_block_parser(text_block, parser_type, is_db=is_db)
+                plain_text += self.__text_block_parser(text_block, parser_type, is_db_title=is_db_title)
         if is_db:
             # 数据库内容特殊字符校对
             return plain_text.replace("|", "\\|")
@@ -220,7 +220,7 @@ class BaseParser:
         return page_body["id"].replace('-', '')
 
     # 提及到其它页面，日期，用户
-    def __mention_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN, is_db=False):
+    def __mention_parser(self, block_handle, parser_type=NotionDump.PARSER_TYPE_PLAIN, is_db_title=False):
         if block_handle["type"] != "mention":
             common_op.debug_log("mention type error! parent_id= " + self.base_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
@@ -240,25 +240,27 @@ class BaseParser:
             # 获取页面的名字
             database_name = block_handle["plain_text"]
             database_link = block_handle["href"]
-
-            common_op.add_new_child_page(
-                self.child_pages,
-                key_id=key_id,
-                link_id=database_id,
-                link_src=database_link,
-                page_type="database",
-                page_name=database_name
-            )
-            common_op.debug_log(
-                "file_parser add page id = " + key_id + " name : " + database_name, level=NotionDump.DUMP_MODE_DEFAULT)
-            common_op.debug_log(internal_var.PAGE_DIC)
-            common_op.debug_log("#############")
-            common_op.debug_log(self.child_pages)
-
-            if parser_type == NotionDump.PARSER_TYPE_MD:
-                mention_plain = content_format.get_page_format_md(key_id, database_name, export_child=self.export_child)
-            else:
+            if is_db_title:
                 mention_plain = database_name
+            else:
+                common_op.add_new_child_page(
+                    self.child_pages,
+                    key_id=key_id,
+                    link_id=database_id,
+                    link_src=database_link,
+                    page_type="database",
+                    page_name=database_name
+                )
+                common_op.debug_log(
+                    "file_parser add page id = " + key_id + " name : " + database_name, level=NotionDump.DUMP_MODE_DEFAULT)
+                common_op.debug_log(internal_var.PAGE_DIC)
+                common_op.debug_log("#############")
+                common_op.debug_log(self.child_pages)
+
+                if parser_type == NotionDump.PARSER_TYPE_MD:
+                    mention_plain = content_format.get_page_format_md(key_id, database_name, export_child=self.export_child)
+                else:
+                    mention_plain = database_name
         elif mention_body["type"] == "page":
             page_id = self.__page_parser(mention_body)
             key_id = page_id + "_mention"
@@ -267,25 +269,28 @@ class BaseParser:
             page_name = block_handle["plain_text"]
             page_link = block_handle["href"]
 
-            # 提及页面按照链接页面处理
-            common_op.add_new_child_page(
-                self.child_pages,
-                key_id=key_id,
-                link_id=page_id,
-                link_src=page_link,
-                page_type="page",
-                page_name=page_name
-            )
-            common_op.debug_log(
-                "file_parser add page id = " + key_id + " name : " + page_name, level=NotionDump.DUMP_MODE_DEFAULT)
-            common_op.debug_log(internal_var.PAGE_DIC)
-            common_op.debug_log("#############")
-            common_op.debug_log(self.child_pages)
-
-            if parser_type == NotionDump.PARSER_TYPE_MD:
-                mention_plain = content_format.get_page_format_md(key_id, page_name, export_child=self.export_child)
-            else:
+            if is_db_title:
                 mention_plain = page_name
+            else:
+                # 提及页面按照链接页面处理
+                common_op.add_new_child_page(
+                    self.child_pages,
+                    key_id=key_id,
+                    link_id=page_id,
+                    link_src=page_link,
+                    page_type="page",
+                    page_name=page_name
+                )
+                common_op.debug_log(
+                    "file_parser add page id = " + key_id + " name : " + page_name, level=NotionDump.DUMP_MODE_DEFAULT)
+                common_op.debug_log(internal_var.PAGE_DIC)
+                common_op.debug_log("#############")
+                common_op.debug_log(self.child_pages)
+
+                if parser_type == NotionDump.PARSER_TYPE_MD:
+                    mention_plain = content_format.get_page_format_md(key_id, page_name, export_child=self.export_child)
+                else:
+                    mention_plain = page_name
         else:
             common_op.debug_log("unknown mention type " + mention_body["type"], level=NotionDump.DUMP_MODE_DEFAULT)
 
@@ -312,7 +317,7 @@ class BaseParser:
             common_op.debug_log("title type error! parent_id= " + self.base_id + " id= " + block_handle["id"],
                                 level=NotionDump.DUMP_MODE_DEFAULT)
             return ""
-        db_page_title = self.__text_list_parser(block_handle["title"], parser_type, is_db=True)
+        db_page_title = self.__text_list_parser(block_handle["title"], parser_type, is_db=True, is_db_title=True)
         if page_id == "":
             # 如果page id是空的，说明只想要内容，不需要重定位
             return db_page_title
@@ -409,9 +414,9 @@ class BaseParser:
             return ""
         checkbox = block_handle["checkbox"]
         if checkbox is True:
-            ret_str = "true"
+            ret_str = NotionDump.MD_BOOL_TRUE
         else:
-            ret_str = "false"
+            ret_str = NotionDump.MD_BOOL_FALSE
         return ret_str
 
     # 数据库 phone_number
@@ -521,7 +526,11 @@ class BaseParser:
         elif formula_block["type"] == "number":
             ret_str = str(formula_block["number"])
         elif formula_block["type"] == "boolean":
-            ret_str = str(formula_block["boolean"])
+            if formula_block["boolean"] is True:
+                ret_str = NotionDump.MD_BOOL_TRUE
+            else:
+                ret_str = NotionDump.MD_BOOL_FALSE
+            # ret_str = str(formula_block["boolean"])
         elif formula_block["type"] == "date":
             ret_str = self.date_parser(formula_block)
         else:
