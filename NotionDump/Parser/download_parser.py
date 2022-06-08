@@ -6,6 +6,7 @@ import os
 import urllib.request
 from time import time, sleep
 from urllib.error import URLError
+from urllib.parse import quote
 
 import NotionDump
 from NotionDump.utils import common_op, internal_var
@@ -61,17 +62,25 @@ class DownloadParser:
         common_op.debug_log("download name " + download_name, level=NotionDump.DUMP_MODE_DEBUG)
         # 下载文件
         try:
+            file_url = quote(file_url, safe='/:?=&%')
             urllib.request.urlretrieve(file_url, download_name)
         except urllib.error.HTTPError as e:
             common_op.debug_log("download name " + download_name + " get error:HTTPError", level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log("download url " + file_url + " get error:HTTPError", level=NotionDump.DUMP_MODE_DEFAULT)
             common_op.debug_log(e, level=NotionDump.DUMP_MODE_DEFAULT)
         except urllib.error.ContentTooShortError as e:
             common_op.debug_log("download name " + download_name + " get error:ContentTooShortError", level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log("download url " + file_url + " get error:ContentTooShortError", level=NotionDump.DUMP_MODE_DEFAULT)
             common_op.debug_log(e, level=NotionDump.DUMP_MODE_DEFAULT)
         except urllib.error.URLError as e:
             common_op.debug_log("download name " + download_name + " get error:URLError", level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log("download url " + file_url + " get error:URLError", level=NotionDump.DUMP_MODE_DEFAULT)
             common_op.debug_log(e, level=NotionDump.DUMP_MODE_DEFAULT)
         except TimeoutError as e:
             common_op.debug_log("download name " + download_name + " get error:TimeoutError", level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log("download url " + file_url + " get error:TimeoutError", level=NotionDump.DUMP_MODE_DEFAULT)
             common_op.debug_log(e, level=NotionDump.DUMP_MODE_DEFAULT)
         return download_name
+
+# https://s3.us-west-2.amazonaws.com/secure.notion-static.com/fccf6e4a-5e63-40af-919b-d283ce640fd0/stn-ScRfAsXHEjJmVL7JjfkV7iSvfFe2qxik7ZoPS4S0.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220528%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220528T030949Z&X-Amz-Expires=3600&X-Amz-Signature=1f441325ffb26c27d7b618b2bc4c9dbb3b4516b3ffc63a5b59407bec346cf0eb&X-Amz-SignedHeaders=host&x-id=GetObject
+#
