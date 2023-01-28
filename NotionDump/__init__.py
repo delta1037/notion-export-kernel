@@ -3,7 +3,7 @@
 # mail:geniusrabbit@qq.com
 
 __author__ = "delta1037 <geniusrabbit@qq.com>"
-__version__ = "1.0"
+__version__ = "0.1.13"
 
 # 临时存放文件夹
 TMP_DIR = "./.tmp/"
@@ -14,6 +14,7 @@ MD_BOOL_TRUE = "✓"
 MD_BOOL_FALSE = "✕"
 # ,、<br> 逗号或者换行
 MD_ROLLUP_SEP = ","
+MD_HIGHLIGHT = "=="
 
 # 日志输出模式
 DUMP_MODE_DEBUG = 0
@@ -31,11 +32,13 @@ PARSER_TYPE_MD = 0
 PARSER_TYPE_PLAIN = 2
 
 # 一些配置开关
+# 对没有在notion保存的文件(pdf\image)尝试下载，否则直接放置链接
+FILE_WITH_LINK = True
 FORMAT_DATE = "%Y/%m/%d"
 FORMAT_DATETIME = "%Y/%m/%d-%H:%M:%S"
 # 是否导出page的properties
 S_PAGE_PROPERTIES = True
-# 主题的格式，default，light，dark，self_define
+# 主题的格式，default，light，dark，markdown，self_define
 S_THEME_TYPE = "default"
 # f开头的是字体颜色，b开头的是背景颜色，d开头的是数据库标签
 S_THEME_LIGHT = {

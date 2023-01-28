@@ -24,6 +24,9 @@ class DownloadParser:
         self.friendly_time = internal_var.FRIENDLY_DOWNLOAD
 
     def download_to_file(self, new_id, child_page_item):
+        # 设置文件链接嵌入时，只有存储在Notion的文件需要下载（不下载会由于时间问题导致链接失效）
+        if NotionDump.FILE_WITH_LINK and "secure.notion-static.com" not in child_page_item["link_src"]:
+            return ""
         now_time = time()
         # 睡眠时间 = 间隔时间 - 函数执行时间
         if self.last_call_time is None:
@@ -64,6 +67,7 @@ class DownloadParser:
         try:
             file_url = quote(file_url, safe='/:?=&%')
             urllib.request.urlretrieve(file_url, download_name)
+            return download_name
         except urllib.error.HTTPError as e:
             common_op.debug_log("download name " + download_name + " get error:HTTPError", level=NotionDump.DUMP_MODE_DEFAULT)
             common_op.debug_log("download url " + file_url + " get error:HTTPError", level=NotionDump.DUMP_MODE_DEFAULT)
@@ -80,7 +84,11 @@ class DownloadParser:
             common_op.debug_log("download name " + download_name + " get error:TimeoutError", level=NotionDump.DUMP_MODE_DEFAULT)
             common_op.debug_log("download url " + file_url + " get error:TimeoutError", level=NotionDump.DUMP_MODE_DEFAULT)
             common_op.debug_log(e, level=NotionDump.DUMP_MODE_DEFAULT)
-        return download_name
+        except Exception as e:
+            common_op.debug_log("download name " + download_name + " get error:Exception", level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log("download url " + file_url + " get error:Exception", level=NotionDump.DUMP_MODE_DEFAULT)
+            common_op.debug_log(e, level=NotionDump.DUMP_MODE_DEFAULT)
+        return ""
 
 # https://s3.us-west-2.amazonaws.com/secure.notion-static.com/fccf6e4a-5e63-40af-919b-d283ce640fd0/stn-ScRfAsXHEjJmVL7JjfkV7iSvfFe2qxik7ZoPS4S0.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220528%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220528T030949Z&X-Amz-Expires=3600&X-Amz-Signature=1f441325ffb26c27d7b618b2bc4c9dbb3b4516b3ffc63a5b59407bec346cf0eb&X-Amz-SignedHeaders=host&x-id=GetObject
 #

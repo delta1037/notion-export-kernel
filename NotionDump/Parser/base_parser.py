@@ -47,11 +47,15 @@ class BaseParser:
             str_ret = "*" + str_ret + "*"
         if block_handle["color"] != "default":
             # 添加颜色，区分背景色和前景色
-            if block_handle["color"].find("_background") != -1:
-                bg_color = block_handle["color"][0:block_handle["color"].rfind('_')]
-                str_ret = "<span style=\"background-color:" + color_transformer(bg_color, background=True) + "\">" + str_ret + "</span>"
+            if NotionDump.S_THEME_TYPE == "markdown":
+                # 使用markdown默认的高亮来渲染所有的颜色类型
+                str_ret = NotionDump.MD_HIGHLIGHT + str_ret + NotionDump.MD_HIGHLIGHT
             else:
-                str_ret = "<font color=\"" + color_transformer(block_handle["color"], background=False) + "\">" + str_ret + "</font>"
+                if block_handle["color"].find("_background") != -1:
+                    bg_color = block_handle["color"][0:block_handle["color"].rfind('_')]
+                    str_ret = "<span style=\"background-color:" + color_transformer(bg_color, background=True) + "\">" + str_ret + "</span>"
+                else:
+                    str_ret = "<font color=\"" + color_transformer(block_handle["color"], background=False) + "\">" + str_ret + "</font>"
         if block_handle["strikethrough"]:
             str_ret = "~~" + str_ret + "~~"
         if last_char == "\n" or last_char == "\t":
@@ -742,11 +746,17 @@ class BaseParser:
         # 最外层颜色
         if block_handle["quote"]["color"] != "default":
             # 添加颜色，区分背景色和前景色
-            if block_handle["quote"]["color"].find("_background") != -1:
-                bg_color = block_handle["quote"]["color"][0:block_handle["quote"]["color"].rfind('_')]
-                quote_ret = "<span style=\"background-color:" + color_transformer(bg_color, background=True) + "\">" + quote_ret + "</span>"
+            if NotionDump.S_THEME_TYPE == "markdown":
+                # 使用markdown默认的高亮来渲染所有的颜色类型
+                quote_ret = NotionDump.MD_HIGHLIGHT + quote_ret + NotionDump.MD_HIGHLIGHT
             else:
-                quote_ret = "<font color=\"" + color_transformer(block_handle["quote"]["color"], background=False) + "\">" + quote_ret + "</font>"
+                if block_handle["quote"]["color"].find("_background") != -1:
+                    bg_color = block_handle["quote"]["color"][0:block_handle["quote"]["color"].rfind('_')]
+                    quote_ret = "<span style=\"background-color:" + color_transformer(bg_color,
+                                                                                      background=True) + "\">" + quote_ret + "</span>"
+                else:
+                    quote_ret = "<font color=\"" + color_transformer(block_handle["quote"]["color"],
+                                                                     background=False) + "\">" + quote_ret + "</font>"
 
         if parser_type == NotionDump.PARSER_TYPE_MD:
             # 这里是否每一行都操作

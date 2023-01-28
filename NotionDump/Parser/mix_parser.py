@@ -54,6 +54,9 @@ class MixParser:
         # 初始化一个下载器，，这里page id无关紧要
         self.download_parser = DownloadParser(self.mix_id)
 
+        # 收集解析中发证的错误
+        self.error_list = []
+
     # 调试时显示子页面内容
     def __test_show_child_page(self):
         if NotionDump.DUMP_MODE == NotionDump.DUMP_MODE_DEBUG:
@@ -80,6 +83,7 @@ class MixParser:
                     page_json = self.query_handle.retrieve_block_children(child_id)
                     if page_json is None:
                         common_op.debug_log("get page error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
+                        self.error_list.append("get page error, id=" + child_id)
                         continue
                     # 解析属性文本到变量中
                     page_properties = None
@@ -107,7 +111,8 @@ class MixParser:
                     db_json = self.query_handle.query_database(child_id)
 
                     if db_json is None:
-                        common_op.debug_log("get page error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
+                        common_op.debug_log("get database error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
+                        self.error_list.append("get database error, id=" + child_id)
                         continue
                     # 获取解析后的数据
                     tmp_filename = self.database_parser.database_to_file(db_json, new_id=child_id)
@@ -117,8 +122,10 @@ class MixParser:
                     # 获取下载后的数据
                     tmp_filename = self.download_parser.download_to_file(new_id=child_id, child_page_item=recursion_page[child_id])
                     child_pages_dic = {}
-                    if tmp_filename == "":
+                    # 尝试下载，没下载成功
+                    if tmp_filename == "" and not NotionDump.FILE_WITH_LINK:
                         common_op.debug_log("file download error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
+                        self.error_list.append("download error, link:" + recursion_page[child_id]["link_src"])
                         continue
                 else:
                     common_op.debug_log("!!! unknown child id type, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
@@ -180,6 +187,7 @@ class MixParser:
         if self.export_child_page:
             self.__recursion_mix_parser()
 
+        internal_var.PAGE_DIC["errors"] = self.error_list
         return tmp_filename
 
     def database_collection(self, json_handle, json_type, col_name_list=None):
