@@ -3,7 +3,7 @@
 # mail:geniusrabbit@qq.com
 
 __author__ = "delta1037 <geniusrabbit@qq.com>"
-__version__ = "0.1.13"
+__version__ = "0.2.0"
 
 # 临时存放文件夹
 TMP_DIR = "./.tmp/"

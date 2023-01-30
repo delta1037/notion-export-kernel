@@ -4,17 +4,13 @@
 
 ## Description
 
-This repository is a development based on [notion-sdk-py](https://github.com/ramnes/notion-sdk-py)（notion official API），and the initial target is to provide convenience for [exporting notes and generating pdf](https://github.com/delta1037/KnowledgeShare) files
+This repository is a development based on [notion-sdk-py](https://github.com/ramnes/notion-sdk-py)（notion official API）,  target to export notion pages and database
 
 Main targets：
 
-- [x] Convert Notion Database(Table) to a csv file
-- [x] Convert Notion Database(Table) to a markdown table file
-- [x] Convert Notion Page or Block to markdown file
-- [x] Recursion Convert child Page or Database(Table)  in Page
-- [x] Recursion Convert child Page in Database(Table) （All in all，all can Recursion Convert）
-- [x] Download image and files
-- [x] Convert link_to_page and bookmark
+- [x] Export Notion Database and page to markdown file
+- [x] Recursion Export child Pages
+- [x] Download image and files in notion
 
 ## Structure
 
@@ -38,25 +34,11 @@ graph TD
     C --> D[Mix Parser]
 
     D --> E[Database Parser]
-    D --> I[Download Parser]
     D --> F[Block Parser]
     
     E --> G[Base Parser]
     F --> G[Base Parser]
 ```
-
-#### Query code structure
-
-```mermaid
-graph TB
-    A[Dump] -->C(Page/Block)
-    A[Dump] -->B(Database)
-	C --> H[Query]
-    B --> H[Query]
-    H --> G[Official API]
-```
-
-
 
 ## Usage
 
@@ -66,6 +48,7 @@ graph TB
 
 ```powershell
 # open terminal, type the cmd (install the latest version)
+pip install python-dateutil
 pip install notion-dump-kernel
 ```
 
@@ -173,10 +156,7 @@ return variable (`page_detail_json`) will be like：
 
 ## Attention
 
-**Problem**
-
-- [ ] Comment can't export
-- [x] the csv file lost it's format shows in notion client（this problem saved， you can export database as markdown table and  open in typora）
+- [ ] Comment not support
 
 ## Others
 

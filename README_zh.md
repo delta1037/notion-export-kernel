@@ -6,17 +6,13 @@
 
 ## 一、项目说明
 
-本仓库是基于 [notion-sdk-py](https://github.com/ramnes/notion-sdk-py)（notion官方API）的开发，最初目的是为[从notion导出电子笔记](https://github.com/delta1037/KnowledgeShare)提供一种便利的方式。
+本仓库是基于 [notion-sdk-py](https://github.com/ramnes/notion-sdk-py)（notion官方API）的开发，导出Notion页面和数据库。
 
 项目目标
 
-- [x] 将Notion数据库（Table）转换为CSV文件
-- [x] 将Notion数据库（Table）转换为Markdown表格文件
-- [x] 将Notion Page页面或者一个单独的Block转换为Markdown文件
-- [x] 递归转换page中的指向page或者数据库（Table）中的子页面
-- [x] 递归转换数据库中Title对应的Page页面（和上一条结合起来简而言之对于Page和Database Table之间的相互嵌套均可以递归转换）
+- [x] 将Notion页面和数据库导出为Markdown文件
+- [x] 递归导出所有子页面（或者链接）
 - [x] 下载文件和图片
-- [x] 转换链接页面和网页书签
 
 ## 二、项目结构
 
@@ -38,7 +34,6 @@ graph TD
     C --> D[Mix Parser]
 
     D --> E[Database Parser]
-    D --> I[Download Parser]
     D --> F[Block Parser]
     
     E --> G[Base Parser]
@@ -46,15 +41,6 @@ graph TD
 ```
 
 
-
-```mermaid
-graph TB
-    A[Dump] -->B(Database)
-    A[Dump] -->C(Page/Block)
-	C --> H[Query]
-    B --> H[Query]
-    H --> G[Official API]
-```
 
 
 
@@ -66,6 +52,7 @@ graph TB
 
 ```powershell
 # 打开终端，输入如下命令安装（装最最新版）
+pip install python-dateutil
 pip install notion-dump-kernel
 ```
 
@@ -170,10 +157,7 @@ dump_output = dump_handle.dump_to_file()
 
 ## 五、注意
 
-**已知的问题**
-
-- [ ] 评论内容无法获取到
-- [x] 数据库CSV只是存了下来，但是本地查看因为没有格式极其不方便（问题已解决，可以将数据库导出为Markdown表格的形式，并嵌入到原数据库的位置）
+- [ ] 不支持评论内容
 
 ## 六、附录
 
