@@ -78,39 +78,34 @@ class BaseParser:
         text_url = block_handle["href"]
         if text_url is not None and parser_type == NotionDump.PARSER_TYPE_MD and not is_db_title:  # 数据库标题越过链接解析
             # 文字有链接内容，分为网络链接和本地链接
-            if text_url.startswith("http"):
+            if text_url.startswith("http") or not text_url.startswith("/"):
                 # 网络链接，直接一步到位
                 text_str = content_format.get_url_format(text_url, text_str)
             else:
                 # Page或者数据库类型，等待重定位
                 if text_url.find("=") != -1:
-                    page_id = text_url[text_url.rfind("/") + 1:text_url.rfind("?")]
-                    common_op.debug_log("### page id " + page_id + " is database")
-                    common_op.add_new_child_page(
-                        self.child_pages,
-                        key_id=page_id + "_" + text_str,
-                        link_id=page_id,
-                        link_src=text_url,
-                        page_type="database",
-                        page_name=text_str
-                    )
+                    id_type = "database"
+                    page_id = text_url[text_url.rfind("/") + 1:text_url.rfind("?")].replace('-', '')
                 else:
-                    page_id = text_url[text_url.rfind("/") + 1:]
-                    common_op.debug_log("### page id " + page_id + " is page")
+                    id_type = "page"
+                    page_id = text_url[text_url.rfind("/") + 1:].replace('-', '')
+                if len(page_id) == NotionDump.ID_LEN:
+                    common_op.debug_log("### page id " + page_id + " is " + id_type)
                     common_op.add_new_child_page(
                         self.child_pages,
                         key_id=page_id + "_" + text_str,
                         link_id=page_id,
                         link_src=text_url,
-                        page_type="page",
+                        page_type=id_type,
                         page_name=text_str
                     )
-
-                # 将页面保存，等待进一步递归操作
-                # 保存子页面信息
-                common_op.debug_log("child_page_parser add page id = " + page_id + "_" + text_str, level=NotionDump.DUMP_MODE_DEFAULT)
-                text_str = content_format.get_page_format_md(page_id + "_" + text_str, text_str,
-                                                             export_child=self.export_child)
+                    # 将页面保存，等待进一步递归操作
+                    # 保存子页面信息
+                    common_op.debug_log("child_page_parser add page id = " + page_id + "_" + text_str, level=NotionDump.DUMP_MODE_DEFAULT)
+                    text_str = content_format.get_page_format_md(page_id + "_" + text_str, text_str,
+                                                                 export_child=self.export_child)
+                else:
+                    text_str = content_format.get_url_format("", text_str)
 
         if parser_type == NotionDump.PARSER_TYPE_MD:
             # 解析annotations部分，为text_str添加格式

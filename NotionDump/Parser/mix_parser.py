@@ -108,7 +108,8 @@ class MixParser:
                 # page里面搞一个Database的解析器
                 db_detail = self.query_handle.query_database(child_id)
 
-                if db_detail is None or db_info is None:
+                if db_detail is None:
+                    # db_info不是必须的，但是在link数据库获取不到
                     common_op.debug_log("get database error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
                     self.error_list.append("get database error, id=" + child_id)
                     continue
@@ -149,7 +150,9 @@ class MixParser:
     def mix_parser(self, root_id, id_type, col_name_list=None):
         # col_name_list 是数据库的可选字段
         common_op.update_child_page_stats(root_id, main_page=True, page_type=id_type)
-        return self.__recursion_mix_parser(True, col_name_list)
+        root_filename = self.__recursion_mix_parser(True, col_name_list)
+        internal_var.PAGE_DIC["errors"] = self.error_list
+        return root_filename
 
     def database_collection(self, json_handle, json_type, col_name_list=None):
         # 只能获取数据库类型

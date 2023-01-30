@@ -3,7 +3,7 @@
 # mail:geniusrabbit@qq.com
 
 __author__ = "delta1037 <geniusrabbit@qq.com>"
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 # 临时存放文件夹
 TMP_DIR = "./.tmp/"
@@ -15,6 +15,7 @@ MD_BOOL_FALSE = "✕"
 # ,、<br> 逗号或者换行
 MD_ROLLUP_SEP = ","
 MD_HIGHLIGHT = "=="
+ID_LEN = len("921e6b4ea44046c6935bcb2c69453196")
 
 # 日志输出模式
 DUMP_MODE_DEBUG = 0

@@ -45,7 +45,7 @@ class Buffer:
         # 查看缓存中是否命中，命中返回True（说明缓存有效），没命中返回False（说明缓存文件无效，需要重新下载）
         if page_id not in self.buffer_map:
             common_op.debug_log("[BUFFER] select_buffer, id=" + page_id + ", not exist")
-            return False
+            return True
         else:
             if is_child:
                 if self.buffer_map[page_id]["update_time"] >= self.base_time:

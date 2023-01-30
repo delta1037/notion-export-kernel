@@ -75,7 +75,9 @@ class NotionQuery:
             if not dirty:
                 # 缓存命中，直接从缓存中加载数据
                 common_op.debug_log("[##CACHE] cached and load " + block_id + ";parent is " + str(parent_id), level=NotionDump.DUMP_MODE_DEFAULT)
-                return self.__load_from_json(block_id, prefix="retrieve_block_")
+                load = self.__load_from_json(block_id, prefix="retrieve_block_")
+                if load is not None:
+                    return load
 
         common_op.debug_log("[&&CACHE] no cached and load " + block_id + ";parent is " + str(parent_id), level=NotionDump.DUMP_MODE_DEFAULT)
         self.__friendly_use_api()
@@ -126,7 +128,9 @@ class NotionQuery:
             if not self.buffer.select_buffer(database_id):
                 # 缓存命中，直接从缓存中加载数据
                 common_op.debug_log("[##CACHE] cached and load " + database_id, level=NotionDump.DUMP_MODE_DEFAULT)
-                return self.__load_from_json(database_id, prefix="query_db_")
+                load = self.__load_from_json(database_id, prefix="query_db_")
+                if load is not None:
+                    return load
         common_op.debug_log("[&&CACHE] no cached and load " + database_id, level=NotionDump.DUMP_MODE_DEFAULT)
 
         self.__friendly_use_api()
