@@ -75,13 +75,13 @@ class BlockParser:
 
         # 获取块id下面的内容并继续解析
         if block["type"] == "synced_block" and block["synced_block"]["synced_from"] is not None:
-            block_id = block["synced_block"]["synced_from"]["block_id"]
-            common_op.debug_log("type synced_block " + block_id + " get child", level=NotionDump.DUMP_MODE_DEFAULT)
+            child_block_id = block["synced_block"]["synced_from"]["block_id"]
+            common_op.debug_log("type synced_block " + child_block_id + " get child", level=NotionDump.DUMP_MODE_DEFAULT)
         else:
-            block_id = block["id"]
+            child_block_id = block["id"]
 
         block_list = []
-        retrieve_ret = self.query_handle.retrieve_block_children(block_id)
+        retrieve_ret = self.query_handle.retrieve_block_children(child_block_id, parent_id=self.block_id)
         if retrieve_ret is not None:
             block_list = retrieve_ret["results"]
 
@@ -89,7 +89,7 @@ class BlockParser:
         if len(block_list) == 0:
             return None
         # 返回获取到的块列表
-        common_op.debug_log("## retrieve block " + block_id, level=NotionDump.DUMP_MODE_DEFAULT)
+        common_op.debug_log("## retrieve block " + child_block_id, level=NotionDump.DUMP_MODE_DEFAULT)
         return block_list
 
     def parser_block(self, block, list_index, last_line_is_table, prefix):
@@ -290,11 +290,9 @@ class BlockParser:
 
         # 创建Markdown文件
         if new_id is not None:
-            self.base_parser.set_new_id(new_id)
-            tmp_md_filename = self.tmp_dir + new_id.replace('-', '') + ".md"
-        else:
-            tmp_md_filename = self.tmp_dir + self.block_id + ".md"
-
+            self.block_id = new_id.replace('-', '')
+            self.base_parser.set_new_id(self.block_id)
+        tmp_md_filename = self.tmp_dir + self.block_id + ".md"
         file = open(tmp_md_filename, "w", encoding="utf-8", newline='')
 
         # 如果存在属性就拼接上去

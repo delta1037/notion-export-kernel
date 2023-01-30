@@ -48,19 +48,9 @@ class Database:
         return internal_var.PAGE_DIC
 
     # 获取到所有的数据库数据(CSV格式)(数据库导出均是CSV)
-    def dump_to_file(self, file_name=None, col_name_list=None, db_q_filter="{}", db_q_sorts="[]"):
-        db_json = self.query_handle.query_database(
-            database_id=self.database_id,
-            db_q_filter=db_q_filter,
-            db_q_sorts=db_q_sorts)
-        if db_json is None:
-            common_op.debug_log("query database get nothing, id=" + self.database_id,
-                                level=NotionDump.DUMP_MODE_DEFAULT)
-            return ""
-
+    def dump_to_file(self, file_name=None, col_name_list=None):
         # 解析到临时文件中
-        tmp_filename = self.mix_parser.mix_parser(json_handle=db_json, json_type="database",
-                                                  col_name_list=col_name_list)
+        tmp_filename = self.mix_parser.mix_parser(root_id=self.database_id, id_type="database", col_name_list=col_name_list)
         if tmp_filename is None:
             common_op.debug_log("page parser fail, id=" + self.database_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""

@@ -49,13 +49,8 @@ class Page:
 
     # 获取到所有的PAGE数据
     def dump_to_file(self, file_name=None):
-        page_json = self.query_handle.retrieve_block_children(self.page_id)
-        if page_json is None:
-            common_op.debug_log("query page get nothing, id=" + self.page_id,
-                                level=NotionDump.DUMP_MODE_DEFAULT)
-            return False
         # 解析到临时文件中
-        tmp_md_filename = self.mix_parser.mix_parser(json_handle=page_json, json_type="block")
+        tmp_md_filename = self.mix_parser.mix_parser(root_id=self.page_id, id_type="block")
         if tmp_md_filename is None:
             common_op.debug_log("page parser fail, id="+self.page_id, level=NotionDump.DUMP_MODE_DEFAULT)
             return ""

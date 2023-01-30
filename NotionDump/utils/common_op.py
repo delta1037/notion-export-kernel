@@ -4,6 +4,7 @@
 
 import copy
 import json
+import os.path
 from json import JSONDecodeError
 
 import NotionDump
@@ -26,11 +27,13 @@ def update_child_page_stats(child_key, dumped=False, main_page=False, local_path
         elif page_type == "database":
             internal_var.PAGE_DIC[child_key]["type"] = "database"
         else:
-            debug_log("update_child_page_stats page type is unknown:" + str(page_type), level=NotionDump.DUMP_MODE_DEFAULT)
+            debug_log("update_child_page_stats page type is unknown:" + str(page_type),
+                      level=NotionDump.DUMP_MODE_DEFAULT)
     if page_title is not None and internal_var.PAGE_DIC[child_key]["inter_soft_page"] is True:
         internal_var.PAGE_DIC[child_key]["inter_soft_page"] = False
         if internal_var.PAGE_DIC[child_key]["page_name"] == "":
             internal_var.PAGE_DIC[child_key]["page_name"] = page_title
+
 
 # 关于软连接一共有如下情况
 # 同一个页面：add_new_child_page
@@ -81,7 +84,8 @@ def update_child_pages(child_pages, parent_id):
 # 添加一个新的子页
 # 链接的key格式是 id_链接名
 # 子页面的key格式是id
-def add_new_child_page(child_pages, key_id, link_id=None, link_src=None, page_name=None, page_type=None, inter_soft_page=False):
+def add_new_child_page(child_pages, key_id, link_id=None, link_src=None, page_name=None, page_type=None,
+                       inter_soft_page=False):
     # 判断id是否存在，存在就不添加了，防止覆盖
     debug_log("add new child key:" + key_id)
     # id 存在并且不是软连接创建的，就不添加了（硬链接先于软连接）
@@ -171,6 +175,19 @@ def save_json_to_file(handle, json_name):
     file.write(json_handle)
     file.flush()
     file.close()
+
+
+# 从文件中加载json文件
+def load_json_from_file(json_name):
+    if not os.path.exists(json_name):
+        debug_log("json file not exist, path=" + json_name, level=NotionDump.DUMP_MODE_DEFAULT)
+        return None
+    try:
+        json_fd = open(json_name, "r", encoding="utf-8")
+        return json.load(json_fd)
+    except JSONDecodeError:
+        debug_log("json decode error", level=NotionDump.DUMP_MODE_DEFAULT)
+        return None
 
 
 # 判断是否添加额外的换行

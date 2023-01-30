@@ -8,7 +8,6 @@ import NotionDump
 from NotionDump.Notion.Notion import NotionQuery
 from NotionDump.Parser.block_parser import BlockParser
 from NotionDump.Parser.database_parser import DatabaseParser
-from NotionDump.Parser.download_parser import DownloadParser
 from NotionDump.utils import common_op, internal_var
 
 
@@ -51,8 +50,6 @@ class MixParser:
             parser_type=self.db_parser_type,
             export_child_pages=self.export_child_page
         )
-        # 初始化一个下载器，，这里page id无关紧要
-        self.download_parser = DownloadParser(self.mix_id)
 
         # 收集解析中发证的错误
         self.error_list = []
@@ -62,7 +59,8 @@ class MixParser:
         if NotionDump.DUMP_MODE == NotionDump.DUMP_MODE_DEBUG:
             print("in page_id: ", self.mix_id, internal_var.PAGE_DIC)
 
-    def __recursion_mix_parser(self):
+    def __recursion_mix_parser(self, is_main=False, col_name_list=None):
+        root_name = None
         update_flag = False
         recursion_page = copy.deepcopy(internal_var.PAGE_DIC)
         for child_id in recursion_page:
@@ -71,124 +69,87 @@ class MixParser:
                 common_op.update_page_recursion(child_id, recursion=True)
                 continue
             # 判断页面是否已经操作过
-            if common_op.is_page_recursion(child_id):
-                update_flag = True
-                common_op.debug_log("start child_page_id=" + child_id)
-                self.__test_show_child_page()
-                # 先更新页面的状态，无论获取成功或者失败都过去了，只获取一次
-                common_op.update_page_recursion(child_id, recursion=True)
-                common_op.debug_log("get page " + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
-                page_title = None
-                if common_op.is_page(child_id):
-                    page_json = self.query_handle.retrieve_block_children(child_id)
-                    if page_json is None:
-                        common_op.debug_log("get page error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
-                        self.error_list.append("get page error, id=" + child_id)
-                        continue
-                    # 解析属性文本到变量中
-                    page_properties = None
-                    # print(NotionDump.S_PAGE_PROPERTIES, is_page_soft(child_id))
-                    if NotionDump.S_PAGE_PROPERTIES or common_op.is_page_soft(child_id):
-                        # API中获取相关细节
-                        page_detail = self.query_handle.retrieve_page(child_id)
-                        # 获取文本
-                        page_properties, page_title = self.database_parser.database_to_md(page_detail, new_id=child_id)
-                    # 解析内容到临时文件中
-                    tmp_filename = self.block_parser.block_to_md(page_json, page_detail=page_properties, new_id=child_id)
-                    child_pages_dic = self.block_parser.get_child_pages_dic()
-                    # print("page", child_pages_dic)
-                    if NotionDump.S_PAGE_PROPERTIES:
-                        db_child_pages_dic = self.database_parser.get_child_pages_dic()
-                        # print("db", db_child_pages_dic)
-                        for db_child_dic_key in db_child_pages_dic:
-                            if db_child_dic_key not in child_pages_dic:
-                                child_pages_dic[db_child_dic_key] = db_child_pages_dic[db_child_dic_key]
-                        # print(child_pages_dic)
-                elif common_op.is_db(child_id):
-                    # retrieve_db = self.query_handle.retrieve_database(child_id)
-                    # print("########## ", "retrieve database " + child_id, retrieve_db)
-                    # page里面搞一个Database的解析器
-                    db_json = self.query_handle.query_database(child_id)
+            if not common_op.is_page_recursion(child_id):
+                continue
 
-                    if db_json is None:
-                        common_op.debug_log("get database error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
-                        self.error_list.append("get database error, id=" + child_id)
-                        continue
-                    # 获取解析后的数据
-                    tmp_filename = self.database_parser.database_to_file(db_json, new_id=child_id)
-                    child_pages_dic = self.database_parser.get_child_pages_dic()
-                elif common_op.is_download(child_id):
-                    # 可下载类型
-                    # 获取下载后的数据
-                    tmp_filename = self.download_parser.download_to_file(new_id=child_id, child_page_item=recursion_page[child_id])
-                    child_pages_dic = {}
-                    # 尝试下载，没下载成功
-                    if tmp_filename == "" and not NotionDump.FILE_WITH_LINK:
-                        common_op.debug_log("file download error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
-                        self.error_list.append("download error, link:" + recursion_page[child_id]["link_src"])
-                        continue
-                else:
-                    common_op.debug_log("!!! unknown child id type, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
+            update_flag = True
+            common_op.debug_log("start child_page_id=" + child_id)
+            self.__test_show_child_page()
+            # 先更新页面的状态，无论获取成功或者失败都过去了，只获取一次
+            common_op.update_page_recursion(child_id, recursion=True)
+            common_op.debug_log("S process id " + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
+            page_title = None
+            tmp_filename = None
+            if common_op.is_page(child_id):
+                # 页面信息
+                page_detail = self.query_handle.retrieve_page(child_id)
+                # 页面内容
+                page_json = self.query_handle.retrieve_block_children(child_id)
+                if page_json is None or page_detail is None:
+                    common_op.debug_log("get page error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
+                    self.error_list.append("get page error, id=" + child_id)
                     continue
+                # 解析属性文本到变量中
+                page_properties = None
+                if NotionDump.S_PAGE_PROPERTIES or common_op.is_page_soft(child_id):
+                    # 获取文本
+                    page_properties, page_title = self.database_parser.database_to_md(page_detail, new_id=child_id)
+                # 解析内容到临时文件中
+                tmp_filename = self.block_parser.block_to_md(page_json, page_detail=page_properties, new_id=child_id)
+                # 处理遇到的子页面
+                child_pages_dic = self.block_parser.get_child_pages_dic()
+                if NotionDump.S_PAGE_PROPERTIES:
+                    db_child_pages_dic = self.database_parser.get_child_pages_dic()
+                    for db_child_dic_key in db_child_pages_dic:
+                        if db_child_dic_key not in child_pages_dic:
+                            child_pages_dic[db_child_dic_key] = db_child_pages_dic[db_child_dic_key]
+            elif common_op.is_db(child_id):
+                db_info = self.query_handle.retrieve_database(child_id)
+                # page里面搞一个Database的解析器
+                db_detail = self.query_handle.query_database(child_id)
 
-                common_op.debug_log("parser page " + child_id + " success", level=NotionDump.DUMP_MODE_DEFAULT)
-                # 再更新本地的存放路径
-                # print("%%%%%%%%%%%", child_id, page_title)
-                common_op.update_child_page_stats(child_id, dumped=True, local_path=tmp_filename, page_title=page_title)
-                # 从页面里获取到所有的子页面,并将子页面添加到父id中
-                common_op.update_child_pages(child_pages_dic, child_id)
+                if db_detail is None or db_info is None:
+                    common_op.debug_log("get database error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
+                    self.error_list.append("get database error, id=" + child_id)
+                    continue
+                # 获取解析后的数据
+                tmp_filename = self.database_parser.database_to_file(db_detail, new_id=child_id, col_name_list=col_name_list)
+                child_pages_dic = self.database_parser.get_child_pages_dic()
+            elif common_op.is_download(child_id):
+                # 可下载类型
+                # 获取下载后的数据
+                tmp_filename = self.query_handle.download_to_file(download_id=child_id, child_page_item=recursion_page[child_id])
+                child_pages_dic = {}
+                # 尝试下载，没下载成功
+                if tmp_filename == "" and not NotionDump.FILE_WITH_LINK:
+                    common_op.debug_log("file download error, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
+                    self.error_list.append("download error, link:" + recursion_page[child_id]["link_src"])
+                    continue
+            else:
+                common_op.debug_log("!!! unknown child id type, id=" + child_id, level=NotionDump.DUMP_MODE_DEFAULT)
+                self.error_list.append("!!! unknown child id type, id=" + child_id)
+                continue
 
-                # 调试
-                common_op.debug_log("# end child_page_id=", child_id)
-                self.__test_show_child_page()
+            common_op.debug_log("E process id " + child_id + " success", level=NotionDump.DUMP_MODE_DEFAULT)
+            # 再更新本地的存放路径
+            common_op.update_child_page_stats(child_id, dumped=True, main_page=is_main, local_path=tmp_filename, page_title=page_title)
+            if is_main:
+                root_name = tmp_filename
+            # 从页面里获取到所有的子页面,并将子页面添加到父id中
+            common_op.update_child_pages(child_pages_dic, child_id)
+
+            # 调试
+            common_op.debug_log("# end child_page_id=", child_id)
+            self.__test_show_child_page()
+
         if update_flag:
             self.__recursion_mix_parser()
+        return root_name
 
-    # col_name_list 是数据库的可选字段
-    def mix_parser(self, json_handle, json_type, col_name_list=None):
-        # 解析到临时文件中
-        common_op.debug_log("parser_type:" + json_type, level=NotionDump.DUMP_MODE_DEFAULT)
-        if json_type == "database":
-            tmp_filename = self.database_parser.database_to_file(json_handle, col_name_list=col_name_list)
-        elif json_type == "block":
-            # 解析属性文本到变量中
-            page_properties = None
-            if NotionDump.S_PAGE_PROPERTIES:
-                # API中获取相关细节
-                page_detail = self.query_handle.retrieve_page(self.mix_id)
-                # 获取文本
-                page_properties, page_title = self.database_parser.database_to_md(page_detail, new_id=self.mix_id)
-            tmp_filename = self.block_parser.block_to_md(json_handle, page_detail=page_properties)
-        else:
-            common_op.debug_log("unknown parser_type:" + json_type, level=NotionDump.DUMP_MODE_DEFAULT)
-            return None
-        # 更新已经获取到的页面的状态(现有内容，再更新状态)
-        common_op.debug_log("update root page: " + self.mix_id + " recursion get child page", level=NotionDump.DUMP_MODE_DEFAULT)
-        common_op.update_child_page_stats(self.mix_id, dumped=True, main_page=True,
-                                          local_path=tmp_filename, page_type=json_type)
-        common_op.update_page_recursion(self.mix_id, recursion=True)
-        # 从页面里获取到所有的子页面,并将子页面添加到父id中
-        if json_type == "database":
-            common_op.update_child_pages(self.database_parser.get_child_pages_dic(), self.mix_id)
-        elif json_type == "block":
-            child_pages_dic = self.block_parser.get_child_pages_dic()
-            # print("page", child_pages_dic)
-            if NotionDump.S_PAGE_PROPERTIES:
-                db_child_pages_dic = self.database_parser.get_child_pages_dic()
-                # print("db", db_child_pages_dic)
-                for db_child_dic_key in db_child_pages_dic:
-                    if db_child_dic_key not in child_pages_dic:
-                        child_pages_dic[db_child_dic_key] = db_child_pages_dic[db_child_dic_key]
-            common_op.update_child_pages(child_pages_dic, self.mix_id)
-        else:
-            common_op.debug_log("unknown parser_type:" + json_type, level=NotionDump.DUMP_MODE_DEFAULT)
-            return None
-
-        if self.export_child_page:
-            self.__recursion_mix_parser()
-
-        internal_var.PAGE_DIC["errors"] = self.error_list
-        return tmp_filename
+    def mix_parser(self, root_id, id_type, col_name_list=None):
+        # col_name_list 是数据库的可选字段
+        common_op.update_child_page_stats(root_id, main_page=True, page_type=id_type)
+        return self.__recursion_mix_parser(True, col_name_list)
 
     def database_collection(self, json_handle, json_type, col_name_list=None):
         # 只能获取数据库类型

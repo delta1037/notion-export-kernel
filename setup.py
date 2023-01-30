@@ -27,16 +27,15 @@ REQUIRES = ["notion-client>=0.8.0"]
 
 setup(
     name="notion-dump-kernel",
-    version="0.1.13",
+    version="0.2.0",
     author="delta1037",
     author_email="geniusrabbit@qq.com",
-    url="https://github.com/delta1037/notion-dump-kernel",
-    description="Freely available tools for dumping Notion page and database.",
-    # long_description=readme_rst,
+    url="https://github.com/delta1037/notion-export-kernel",
+    description="Freely available tools for export Notion page and database.",
     project_urls={
-        "Documentation": "https://github.com/delta1037/notion-dump-kernel/blob/main/README_En.md",
-        "Source": "https://github.com/delta1037/notion-dump-kernel",
-        "Tracker": "https://github.com/delta1037/notion-dump-kernel/issues",
+        "Documentation": "https://github.com/delta1037/notion-export-kernel/blob/main/README.md",
+        "Source": "https://github.com/delta1037/notion-export-kernel",
+        "Tracker": "https://github.com/delta1037/notion-export-kernel/issues",
     },
     classifiers=[
         "Development Status :: 3 - Alpha",

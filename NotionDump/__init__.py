@@ -31,6 +31,10 @@ DUMP_TYPE_DB_TABLE = 4
 PARSER_TYPE_MD = 0
 PARSER_TYPE_PLAIN = 2
 
+# 是否使用缓存
+BUFFER_FILE = TMP_DIR + "notion_download_buffer.json"
+USE_BUFFER = True
+
 # 一些配置开关
 # 对没有在notion保存的文件(pdf\image)尝试下载，否则直接放置链接
 FILE_WITH_LINK = True

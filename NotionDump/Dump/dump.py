@@ -69,6 +69,7 @@ class Dump:
             return ""
         # 递归时第一个block单独作为一个main page存放
         self.handle.dump_to_file(file_name=file_name)
+        self.query_handle.safe_save()
 
         pages_detail = copy.deepcopy(internal_var.PAGE_DIC)
         internal_var.PAGE_DIC = {}
@@ -80,6 +81,7 @@ class Dump:
             return ""
         # 将内容导出到数据库
         self.handle.dump_to_db()
+        self.query_handle.safe_save()
 
         pages_detail = copy.deepcopy(internal_var.PAGE_DIC)
         internal_var.PAGE_DIC = {}
@@ -92,6 +94,7 @@ class Dump:
             return ""
 
         self.handle.dump_to_json(json_name=json_name)
+        self.query_handle.safe_save()
 
         pages_detail = copy.deepcopy(internal_var.PAGE_DIC)
         internal_var.PAGE_DIC = {}
