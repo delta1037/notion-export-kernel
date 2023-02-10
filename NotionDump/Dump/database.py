@@ -88,10 +88,13 @@ class Database:
         common_op.save_json_to_file(db_json, json_name)
 
     def dump_to_dic(self, col_name_list=None, db_q_filter="{}", db_q_sorts="[]"):
+        # 由于数据库修改属性不会使数据库的修改时间改变，所以这里采用强制更新的方式
         db_json = self.query_handle.query_database(
             database_id=self.database_id,
             db_q_filter=db_q_filter,
-            db_q_sorts=db_q_sorts)
+            db_q_sorts=db_q_sorts,
+            force_update=True
+        )
         if db_json is None:
             common_op.debug_log("query database get nothing, id=" + self.database_id,
                                 level=NotionDump.DUMP_MODE_DEFAULT)

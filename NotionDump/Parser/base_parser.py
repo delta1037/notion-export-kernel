@@ -779,7 +779,7 @@ class BaseParser:
         table_row_list = self.__table_row_parser(block_handle, parser_type)
         table_row_ret = "|"
         for it in table_row_list:
-            table_row_ret += it + "|"
+            table_row_ret += it.replace('\n', '<br>') + "|"
         if first_row:
             table_row_ret += "\n|"
             for i in range(len(table_row_list)):

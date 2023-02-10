@@ -134,6 +134,7 @@ class BlockParser:
         elif block_type == "quote":
             # quote
             block_text = self.base_parser.quote_parser(block, self.parser_type)
+            block_text = block_text.replace('\n', '<br>')
         elif block_type == "equation":
             # Page equation
             block_text = self.base_parser.equation_parser(block)

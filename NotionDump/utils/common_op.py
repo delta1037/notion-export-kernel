@@ -15,7 +15,7 @@ from NotionDump.utils import internal_var
 def update_child_page_stats(child_key, dumped=False, main_page=False, local_path=None, page_type=None, page_title=None):
     if child_key not in internal_var.PAGE_DIC:
         # 如果现有的列表里没有这一条,则新加一条
-        debug_log("CREATE child page " + child_key + "from temp", level=NotionDump.DUMP_MODE_DEFAULT)
+        debug_log("CREATE child page " + child_key + " from temp", level=NotionDump.DUMP_MODE_DEFAULT)
         internal_var.PAGE_DIC[child_key] = copy.deepcopy(internal_var.CHILD_PAGE_TEMP)
     internal_var.PAGE_DIC[child_key]["dumped"] = dumped
     internal_var.PAGE_DIC[child_key]["main_page"] = main_page

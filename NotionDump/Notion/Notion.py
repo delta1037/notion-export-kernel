@@ -65,9 +65,9 @@ class NotionQuery:
         self.last_call_time = time()
 
     # 获取该块下所有的子块
-    def retrieve_block_children(self, block_id, parent_id=None, page_size=100):
+    def retrieve_block_children(self, block_id, parent_id=None, page_size=100, force_update=False):
         # 添加缓存系统
-        if NotionDump.USE_BUFFER:
+        if not force_update and NotionDump.USE_BUFFER:
             if parent_id is not None:
                 dirty = self.buffer.select_buffer(parent_id, is_child=True)
             else:
@@ -79,7 +79,7 @@ class NotionQuery:
                 if load is not None:
                     return load
 
-        common_op.debug_log("[&&CACHE] no cached and load " + block_id + ";parent is " + str(parent_id), level=NotionDump.DUMP_MODE_DEFAULT)
+        common_op.debug_log("[&&CACHE] no cached and load " + block_id + "; parent is " + str(parent_id), level=NotionDump.DUMP_MODE_DEFAULT)
         self.__friendly_use_api()
         query_post = {
             "block_id": block_id,
@@ -122,9 +122,9 @@ class NotionQuery:
         return None
 
     # 获取到所有的数据库数据(JSon格式)
-    def query_database(self, database_id, db_q_filter="{}", db_q_sorts="[]"):
+    def query_database(self, database_id, db_q_filter="{}", db_q_sorts="[]", force_update=False):
         # 添加缓存系统
-        if NotionDump.USE_BUFFER:
+        if not force_update and NotionDump.USE_BUFFER:
             if not self.buffer.select_buffer(database_id):
                 # 缓存命中，直接从缓存中加载数据
                 common_op.debug_log("[##CACHE] cached and load " + database_id, level=NotionDump.DUMP_MODE_DEFAULT)
