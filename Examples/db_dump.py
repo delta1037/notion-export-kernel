@@ -10,8 +10,8 @@ from NotionDump.Dump.dump import Dump
 from NotionDump.Notion.Notion import NotionQuery
 from NotionDump.utils import common_op
 
-TOKEN_TEST = "secret_WRLJ9xyEawNxzRhVHVWfciTl9FAyNCd29GMUvr2hQD4"
-DB_TABLE_INLINE_ID = "3b40cf6b60fc49edbe25740dd9a74af7"
+TOKEN_TEST = "secret_ALjbBRGaZcagEjPtL1c2F139steBXjr8Fc8uQso4YLV"
+DB_TABLE_INLINE_ID = "0b1f524ad42b420f889a2c6adb9b8c92"
 NotionDump.DUMP_MODE = NotionDump.DUMP_MODE_DEBUG
 
 
@@ -79,8 +79,8 @@ if __name__ == '__main__':
     # test_db_table_inline_parser_csv(query_handle, True)
 
     # 数据库存储到MD文件
-    # test_db_table_inline_parser_md(query_handle, True)
+    test_db_table_inline_parser_md(query_handle, True)
 
     # 数据库存储到字典
-    test_db_table_inline_parser_dic(query_handle)
+    # test_db_table_inline_parser_dic(query_handle)
 

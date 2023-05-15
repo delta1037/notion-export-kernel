@@ -210,18 +210,8 @@ def parser_newline(last_type, now_type):
 
 def debug_log(debug_str, level=NotionDump.DUMP_MODE_DEBUG):
     if NotionDump.DUMP_MODE == NotionDump.DUMP_MODE_DEBUG:
-        # debug 模式啥都打印出来
-        print("[NotionDump] ", end='')
-        print(debug_str)
-
-        # debug内容写入到文件
-        log_fd = open("notion-export-kernel-debug.log", "a+", encoding='utf-8')
-        log_fd.write(str(debug_str) + "\n")
-        log_fd.flush()
-        log_fd.close()
-
+        NotionDump.LOGGER.log_debug(debug_str)
     elif NotionDump.DUMP_MODE == NotionDump.DUMP_MODE_DEFAULT and level == NotionDump.DUMP_MODE_DEFAULT:
         # 默认模式 对 level进行过滤
-        print("[NotionDump] ", end='')
-        print(debug_str)
+        NotionDump.LOGGER.log_info(debug_str)
     # 静默模式什么都不输出

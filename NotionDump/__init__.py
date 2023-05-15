@@ -3,7 +3,9 @@
 # mail:geniusrabbit@qq.com
 
 __author__ = "delta1037 <geniusrabbit@qq.com>"
-__version__ = "0.2.1"
+__version__ = "0.2.2"
+
+from NotionDump import utils
 
 # 临时存放文件夹
 TMP_DIR = "./.tmp/"
@@ -22,6 +24,27 @@ DUMP_MODE_DEBUG = 0
 DUMP_MODE_DEFAULT = 1
 DUMP_MODE_SILENT = 2
 DUMP_MODE = DUMP_MODE_DEFAULT
+
+
+# 日志控制器
+class NotionBackupLogger:
+    def __init__(self):
+        self.prefix = "[NotionDump] "
+        self.log_fd = open("notion-export-kernel-debug.log", "a+", encoding='utf-8')
+
+    def log_debug(self, log_str):
+        self.log_info(log_str)
+
+        # debug内容写入到文件
+        self.log_fd.write(str(log_str) + "\n")
+        self.log_fd.flush()
+
+    def log_info(self, log_str):
+        print(self.prefix, end='')
+        print(log_str)
+
+
+LOGGER = NotionBackupLogger()
 
 # 导出的类型
 DUMP_TYPE_BLOCK = 1

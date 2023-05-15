@@ -9,8 +9,8 @@ from NotionDump.Dump.dump import Dump
 from NotionDump.Notion.Notion import NotionQuery
 from NotionDump.utils import common_op
 
-TOKEN_TEST = "secret_WRLJ9xyEawNxzRhVHVWfciTl9FAyNCd29GMUvr2hQD4"
-PAGE_MIX_ID = "6138380c8d3d4c31884f4f90da60a4f1"
+TOKEN_TEST = "secret_ALjbBRGaZcagEjPtL1c2F139steBXjr8Fc8uQso4YLV"
+PAGE_MIX_ID = "921e6b4ea44046c6935bcb2c69453196"
 # NotionDump.DUMP_MODE = NotionDump.DUMP_MODE_DEBUG
 
 
