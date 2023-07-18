@@ -3,7 +3,7 @@
 # mail:geniusrabbit@qq.com
 
 __author__ = "delta1037 <geniusrabbit@qq.com>"
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 from NotionDump import utils
 
