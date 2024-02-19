@@ -30,12 +30,14 @@ DUMP_MODE = DUMP_MODE_DEFAULT
 class NotionBackupLogger:
     def __init__(self):
         self.prefix = "[NotionDump] "
-        self.log_fd = open("notion-export-kernel-debug.log", "a+", encoding='utf-8')
+        self.log_fd = None
 
     def log_debug(self, log_str):
         self.log_info(log_str)
 
         # debug内容写入到文件
+        if self.log_fd is None:
+            self.log_fd = open("notion-export-kernel-debug.log", "a+", encoding='utf-8')
         self.log_fd.write(str(log_str) + "\n")
         self.log_fd.flush()
 
